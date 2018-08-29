@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="customer_form">
+            <block class="TNW\QuickbooksBasic\Block\Customer\Edit\Tab\View" name="customer_edit_tab_quickbooks"
+                   template="customer/tab/view.phtml">
+                <arguments>
+                    <argument name="sort_order" xsi:type="number">31</argument>
+                </arguments>
+                <block class="TNW\QuickbooksBasic\Block\Customer\Edit\Tab\View\Quickbooks" name="quickbooks_info"
+                       template="customer/tab/view/quickbooks.phtml"/>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

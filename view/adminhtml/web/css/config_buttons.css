@@ -1,0 +1,27 @@
+table.quickbooks-config-buttons {
+    width: auto !important;
+}
+
+table.quickbooks-config-buttons td {
+    padding-top: 0 !important;
+    width: 50%;
+}
+
+.action-quickbooks-connect {
+    width: 96px;
+    height: 33px;
+    background-size: cover;
+    background-image: url('../images/C2QB_green_btn_med_default.png');
+}
+
+.action-quickbooks-connect:hover {
+    background-image: url('../images/C2QB_green_btn_med_hover.png');
+}
+
+#quickbooks_connect_result,
+#quickbooks_test_result {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 10px;
+    padding-right: 20px;
+}

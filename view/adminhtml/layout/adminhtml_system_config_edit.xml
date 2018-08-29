@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="TNW_QuickbooksBasic::css/config_buttons.css"/>
+        <css src="TNW_QuickbooksBasic::css/select2/select2.min.css"/>
+    </head>
+    <body>
+        <referenceContainer name="js">
+            <block class="Magento\Backend\Block\Template" template="TNW_QuickbooksBasic::system/config/select2.phtml"/>
+        </referenceContainer>
+    </body>
+</page>
+

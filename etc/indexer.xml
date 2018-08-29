@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Indexer/etc/indexer.xsd">
+    <indexer id="customer_grid">
+        <fieldset name="customer">
+            <field name="quickbooks_id" xsi:type="filterable" dataType="varchar" handler="TNW\QuickbooksBasic\Indexer\Handler\Attribute"/>
+            <field name="quickbooks_sync_token" xsi:type="filterable" dataType="varchar" handler="TNW\QuickbooksBasic\Indexer\Handler\Attribute"/>
+            <field name="quickbooks_sync_status" xsi:type="filterable" dataType="int" handler="TNW\QuickbooksBasic\Indexer\Handler\Attribute"/>
+        </fieldset>
+    </indexer>
+</config>

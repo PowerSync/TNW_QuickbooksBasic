@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="TNW_Quickbooks::quickbooks"
+             translate="title"
+             title="Quickbooks"
+             module="TNW_QuickbooksBasic"
+             sortOrder="10"
+             parent="Magento_Backend::system"
+             resource="TNW_QuickbooksBasic::config" />
+
+        <add id="TNW_Quickbooks::system_message"
+             translate="title"
+             title="Log"
+             module="TNW_QuickbooksBasic"
+             sortOrder="30"
+             parent="TNW_Quickbooks::quickbooks"
+             action="quickbooks/system_log/view"
+             resource="TNW_QuickbooksBasic::system_message" />
+    </menu>
+</config>

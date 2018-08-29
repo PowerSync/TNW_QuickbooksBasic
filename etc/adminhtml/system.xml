@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="tnw_quickbooks" translate="label" sortOrder="351">
+            <label>TNW Quickbooks</label>
+        </tab>
+        <section id="quickbooks" translate="label" type="text" sortOrder="1000" showInDefault="1">
+            <label>General</label>
+            <tab>tnw_quickbooks</tab>
+            <resource>TNW_QuickbooksBasic::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0"
+                   showInStore="0">
+                <label>General</label>
+                <field id="active" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="0"
+                       showInStore="0">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enables/Disables integration with QuickBooks</comment>
+                </field>
+                <field id="timezone_for_date" translate="label" type="select" sortOrder="110" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Timezone for the Date field type</label>
+                    <source_model>Magento\Config\Model\Config\Source\Locale\Timezone</source_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Locale\Timezone</backend_model>
+                </field>
+            </group>
+            <group id="extension_info" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Extension Info</label>
+                <comment><![CDATA[<div class="message message-info">For installation &amp; configuration instructions visit our <a href="https://technweb.atlassian.net/wiki/spaces/IWQ/pages/590807169/Starter+Pack" target="_blank">online documentation</a>.</div>]]></comment>
+                <field id="basic_version" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Basic</label>
+                    <frontend_model>TNW\QuickbooksBasic\Block\Adminhtml\System\Config\Form\Field\Extension\Version</frontend_model>
+                </field>
+            </group>
+            <group id="environment" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Environment</label>
+                <group id="configuration_details" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="4">
+                    <frontend_model>TNW\QuickbooksBasic\Block\Adminhtml\System\Config\Fieldset\Hint</frontend_model>
+                </group>
+                <field id="type" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Type</label>
+                    <source_model>TNW\QuickbooksBasic\Model\Config\Source\Environment</source_model>
+                    <backend_model>TNW\QuickbooksBasic\Model\Config\Backend\Environment</backend_model>
+                    <config_path>quickbooks/general/environment</config_path>
+                    <comment><![CDATA[Type of the QuickBooks account you are connecting to]]></comment>
+                </field>
+                <field id="test_buttons" sortOrder="100" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <frontend_model>TNW\QuickbooksBasic\Block\Adminhtml\System\Config\Buttons</frontend_model>
+                    <config_path>quickbooks/general/test_buttons</config_path>
+                </field>
+                <depends>
+                    <field id="quickbooks/general/active">1</field>
+                </depends>
+            </group>
+            <group id="advanced" translate="label" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Advanced</label>
+                <group id="log" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Log Messages</label>
+                    <field id="status" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0">
+                        <label>Enable File</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment>Location is {{base_dir}}/var/log/tnw_quickbooks.log</comment>
+                        <config_path>quickbooks/advanced/log_status</config_path>
+                    </field>
+                    <field id="db_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0">
+                        <label>Enable DB</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment>Add log to the database</comment>
+                        <config_path>quickbooks/advanced/db_log_status</config_path>
+                    </field>
+                    <field id="db_log_limit" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0">
+                        <label>DB log Limit</label>
+                        <config_path>quickbooks/advanced/db_log_limit</config_path>
+                        <depends>
+                            <field id="db_status">1</field>
+                        </depends>
+                    </field>
+                </group>
+            </group>
+        </section>
+        <section id="quickbooks_customer" translate="label" type="text" sortOrder="1500" showInDefault="1">
+            <label>Customer</label>
+            <tab>tnw_quickbooks</tab>
+            <resource>TNW_QuickbooksBasic::customer</resource>
+            <group id="customer" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1">
+                <label>Customer</label>
+                <field id="active" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="0"
+                       showInStore="0">
+                    <label>Synchronization Type</label>
+                    <source_model>TNW\QuickbooksBasic\Model\Config\Source\SynchronizationType</source_model>
+                    <comment><![CDATA[<b>Manual</b> - Customers will have to be manually synchronized by clicking 'QuickBooks Sync'
+                        button <br /><b>Automatic</b> - Customers will be pushed to QuickBooks every time a customer is updated]]>
+                    </comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

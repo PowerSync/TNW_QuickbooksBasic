@@ -1,0 +1,23 @@
+<?php
+/**
+ * Copyright © 2016 TechNWeb, Inc. All rights reserved.
+ * See TNW_LICENSE.txt for license details.
+ */
+
+/**
+ * @var \Magento\Paypal\Block\Adminhtml\System\Config\ResolutionRules $block
+ */
+
+?>
+<script>
+    require([
+        "jquery",
+        "TNW_QuickbooksBasic/js/select2/select2.min",
+        "domReady!"
+    ], function () {
+        jQuery('.select2').select2();
+        jQuery('.entry-edit-head.admin__collapsible-block').click(function(){
+            jQuery('.select2').select2();
+        })
+    });
+</script>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="quickbooks_access_token_renewal" instance="TNW\QuickbooksBasic\Cron\Reconnect" method="execute">
+            <schedule>0 2 * * *</schedule>
+        </job>
+    </group>
+</config>

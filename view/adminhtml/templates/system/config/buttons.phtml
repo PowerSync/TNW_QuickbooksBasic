@@ -1,0 +1,127 @@
+<?php
+// @codingStandardsIgnoreFile
+?>
+<?php
+/**
+ * @see \TNW\QuickbooksBasic\Block\Adminhtml\System\Config\Connect
+ * @see \TNW\QuickbooksBasic\Block\Adminhtml\System\Config\Test
+ */
+?>
+<script>
+    require(['prototype'], function () {
+//<![CDATA[
+        function quickbooksConnect() {
+            var messageDiv = $('quickbooks_connect_result');
+            new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getConnectAjaxUrl() ?>', {
+                onSuccess: function (response) {
+                    var result = '<?php /* @escapeNotVerified */ echo __('Error.') ?>';
+                    try {
+                        if (response.responseText.isJSON()) {
+                            response = response.responseText.evalJSON();
+                            result = response.message;
+                        }
+                        if (response.success == 'true') {
+                            location.href = response.connect_url;
+                            messageDiv.removeClassName('hidden').addClassName('message-success').removeClassName('message-error')
+                        } else {
+                            messageDiv.removeClassName('hidden').addClassName('message-error').removeClassName('message-success')
+                        }
+                    } catch (e) {
+                        messageDiv.removeClassName('hidden').addClassName('message-error').removeClassName('message-success')
+                    }
+                    messageDiv.update(result);
+                }
+            });
+        }
+
+        function quickbooksDisconnect() {
+            var messageDiv = $('quickbooks_connect_result');
+            new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getDisconnectAjaxUrl() ?>', {
+                onSuccess: function (response) {
+                    var result = '<?php /* @escapeNotVerified */ echo __('Error.') ?>';
+                    try {
+                        if (response.responseText.isJSON()) {
+                            response = response.responseText.evalJSON();
+                            result = response.message;
+                        }
+                        if (response.success == 'true') {
+                            messageDiv.removeClassName('hidden').addClassName('message-success').removeClassName('message-error')
+                        } else {
+                            messageDiv.removeClassName('hidden').addClassName('message-error').removeClassName('message-success')
+                        }
+
+                        location.reload(true);
+                    } catch (e) {
+                        messageDiv.removeClassName('hidden').addClassName('message-error').removeClassName('message-success')
+                    }
+                    messageDiv.update(result);
+                }
+            });
+        }
+
+        function quickbooksTest() {
+            var messageDiv = $('quickbooks_test_result');
+            new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getTestAjaxUrl() ?>', {
+                onSuccess: function (response) {
+                    var result = '<?php /* @escapeNotVerified */ echo __('Connection could not be established.') ?>';
+                    try {
+                        if (response.responseText.isJSON()) {
+                            response = response.responseText.evalJSON();
+                            result = response.message;
+                        }
+                        if (response.success == 'true') {
+                            messageDiv.removeClassName('hidden').addClassName('message-success').removeClassName('message-error')
+                        } else {
+                            messageDiv.removeClassName('hidden').addClassName('message-error').removeClassName('message-success')
+                        }
+                    } catch (e) {
+                        messageDiv.removeClassName('hidden').addClassName('message-error').removeClassName('message-success')
+                    }
+                    messageDiv.update(result);
+                }
+            });
+        }
+
+        window.quickbooksConnect = quickbooksConnect;
+        window.quickbooksDisconnect = quickbooksDisconnect;
+        window.quickbooksTest = quickbooksTest;
+//]]>
+    });
+
+</script>
+<div class="actions">
+    <table class="quickbooks-config-buttons">
+        <tr>
+            <td>
+                <?php if($block->getIsConnected()): ?>
+                    <button onclick="quickbooksDisconnect(); return false;"
+                            class="action-quickbooks-disconnect"
+                            type="button"
+                            id="<?php echo $block->getHtmlId() ?>_disconnect">
+                        <span><?php echo $block->escapeHtml($block->getDisconnectButtonLabel()) ?></span>
+                    </button>
+                <?php else: ?>
+                    <div onclick="quickbooksConnect(); return false;"
+                            class="action-quickbooks-connect"
+                            type="button"
+                            id="<?php echo $block->getHtmlId() ?>_connect">
+                        <span><?php echo $block->escapeHtml($block->getConnectButtonLabel()) ?></span>
+                    </div>
+                <?php endif; ?>
+            </td>
+            <td>
+                <button onclick="quickbooksTest(); return false;"
+                        class="action-quickbooks-test<?= $block->getTestOrange() ? ' primary' : '' ?>" type="button"
+                        id="<?php echo $block->getHtmlId() ?>_test">
+                    <span><?php echo $block->escapeHtml($block->getTestButtonLabel()) ?></span>
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td><div id="quickbooks_connect_result" class="message-validation message hidden"></div></td>
+            <td><div id="quickbooks_test_result" class="message-validation message hidden"></div></td>
+        </tr>
+    </table>
+    <?php // fake input to workaround magento bug with dependencies where there is no input defined ?>
+    <input type="hidden" id="<?php echo $block->getHtmlId() ?>" />
+</div>

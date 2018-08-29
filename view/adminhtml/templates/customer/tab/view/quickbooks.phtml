@@ -1,0 +1,28 @@
+<?php
+// @codingStandardsIgnoreFile
+?>
+<div class="fieldset-wrapper customer-quickbooks-information">
+    <div class="fieldset-wrapper-title">
+        <span class="title"><?php /* @escapeNotVerified */
+            echo __('QuickBooks') ?></span>
+    </div>
+    <table class="admin__table-secondary">
+        <tbody>
+        <?php foreach ($block->getQuickbooksAttributes() as $attributeData): ?>
+            <tr>
+                <th><?php /* @escapeNotVerified */
+                    echo __('%1:', $attributeData['label']) ?></th>
+                <td><?php /* @escapeNotVerified */
+                    echo __('%1', $attributeData['value']) ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+<div class="customer-quickbooks-sync">
+    <?php $buttonData = $block->getSyncButtonData(); ?>
+    <button type="button" class="<?php echo $buttonData['class']; ?>"
+            onclick="<?php echo $buttonData['on_click']; ?>">
+        <span><?php echo $buttonData['label']; ?></span>
+    </button>
+</div>

@@ -1,0 +1,25 @@
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <columns name="customer_columns">
+        <column name="quickbooks_sync_status" class="TNW\QuickbooksBasic\Ui\Component\Listing\Columns\CustomerSyncStatus">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">TNW_QuickbooksBasic/js/grid/columns/syncstatus</item>
+                    <item name="sortable" xsi:type="boolean">true</item>
+                    <item name="label" xsi:type="string" translate="true">QuickBooks Sync status</item>
+                    <item name="sortOrder" xsi:type="number">150</item>
+                </item>
+            </argument>
+        </column>
+        <actionsColumn name="quickbooks_id" class="TNW\QuickbooksBasic\Ui\Component\Listing\Columns\QuickbooksId">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="component" xsi:type="string">TNW_QuickbooksBasic/js/grid/columns/quickbooksid</item>
+                    <item name="sortable" xsi:type="boolean">true</item>
+                    <item name="label" xsi:type="string" translate="true">QuickBooks Id</item>
+                    <item name="sortOrder" xsi:type="number">280</item>
+                </item>
+            </argument>
+        </actionsColumn>
+    </columns>
+</listing>
