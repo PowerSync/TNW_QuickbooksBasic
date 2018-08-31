@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © 2018 TechNWeb, Inc. All rights reserved.
+ * See TNW_LICENSE.txt for license details.
+ */
+-->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">quickbooks_interview.quickbooks_interview_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Quickbooks Interview</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <namespace>quickbooks_interview</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>quickbooks_interview.quickbooks_interview_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="quickbooks_interview_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="Marketing/interview/markUserInterviewed"/>
+        </settings>
+        <dataProvider class="TNW\Marketing\Ui\DataProvider\DataProvider" name="quickbooks_interview_data_source" />
+    </dataSource>
+    <modal name="quick_survey_modal" component="TNW_Marketing/js/modal/component">
+        <settings>
+            <onCancel>closeSnoozeSurvey</onCancel>
+            <state>true</state>
+            <options>
+                <option name="modalClass" xsi:type="string">quick-survey-modal</option>
+                <option name="title" xsi:type="string" translate="true">Thank you for putting your trust in us!</option>
+                <option name="type" xsi:type="string">popup</option>
+                <option name="responsive" xsi:type="boolean">true</option>
+                <option name="innerScroll" xsi:type="boolean">true</option>
+                <option name="autoOpen" xsi:type="boolean">true</option>
+                <option name="buttons" xsi:type="array">
+                    <item name="0" xsi:type="array">
+                        <item name="text" xsi:type="string">Send Your Feedback</item>
+                        <item name="class" xsi:type="string">action-primary</item>
+                        <item name="actions" xsi:type="array">
+                            <item name="0" xsi:type="array">
+                                <item name="targetName" xsi:type="string">${ $.name }</item>
+                                <item name="actionName" xsi:type="string">closeReleaseSurvey</item>
+                            </item>
+                        </item>
+                    </item>
+                </option>
+            </options>
+        </settings>
+        <container name="quickbooks_interview_text" template="ui/form/components/complex">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="label" xsi:type="string"/>
+                    <item name="additionalClasses" xsi:type="string">quick-survey-text</item>
+                    <item name="text" xsi:type="string" translate="true">
+                        <![CDATA[
+                        <p>We hope you are enjoying the <a target="_blank" href="https://marketplace.magento.com/tnw-quickbooks.html">FREE QuickBooks Online integration</a>. Did you know that we offer a version of this integration which has a lot more features?</p>
+                        <p>Watch this video to get an idea of what you could have available at your fingertips.</p>
+                        <p><a target="_blank" href="https://powersync.biz/contact-us">Contact us</a> if you would like to talk to one of our certified QuickBooks specialists or <a target="_blank" href="https://powersync.biz/integrations-magento2-quickbooks/">visit our website</a> to learn more about the paid version.</p>
+                        <p class="quick-survey-video-wrapper"><iframe src="https://www.youtube.com/embed/F-6PMuZ1aLs?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></p>
+                        ]]>
+                    </item>
+                </item>
+            </argument>
+        </container>
+        <fieldset name="quick_survey_fieldset">
+            <settings>
+                <label translate="true">Quick Survey</label>
+                <additionalClasses>
+                    <class name="quick-survey-fieldset-wrapper">true</class>
+                </additionalClasses>
+            </settings>
+            <field name="survey_result" formElement="checkboxset">
+                <settings>
+                    <label />
+                    <componentType>field</componentType>
+                    <dataScope>survey_result</dataScope>
+                    <visible>true</visible>
+                    <validation>
+                        <rule name="required-entry" xsi:type="boolean">true</rule>
+                    </validation>
+                </settings>
+                <formElements>
+                    <checkboxset>
+                        <settings>
+                            <options class="TNW\Marketing\Model\Config\Source\Survey\Options"/>
+                            <multiple>false</multiple>
+                        </settings>
+                    </checkboxset>
+                </formElements>
+            </field>
+            <field name="rating" component="TNW_Marketing/js/form/element/rating" formElement="select">
+                <settings>
+                    <label translate="true">How would you rate this extension?</label>
+                    <additionalClasses>
+                        <class name="quick-survey-field">true</class>
+                    </additionalClasses>
+                    <dataScope>rating</dataScope>
+                    <dataType>text</dataType>
+                </settings>
+                <formElements>
+                    <select>
+                        <settings>
+                            <options class="TNW\Marketing\Model\Config\Source\Survey\Stars" />
+                        </settings>
+                    </select>
+                </formElements>
+            </field>
+            <field name="comments" formElement="textarea">
+                <settings>
+                    <label />
+                    <dataScope>comments</dataScope>
+                    <dataType>text</dataType>
+                    <placeholder translate="true">Tell us more about you experience?</placeholder>
+                </settings>
+                <formElements>
+                    <textarea>
+                        <settings>
+                            <cols>30</cols>
+                        </settings>
+                    </textarea>
+                </formElements>
+            </field>
+        </fieldset>
+    </modal>
+</form>
