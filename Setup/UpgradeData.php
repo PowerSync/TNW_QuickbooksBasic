@@ -175,6 +175,28 @@ class UpgradeData implements UpgradeDataInterface
             $quickbooksSetup->updateAttribute(Customer::ENTITY, 'quickbooks_sync_status', 'is_searchable_in_grid', false);
         }
 
+        if (version_compare($context->getVersion(), '2.1.18') < 0) {
+            $this->version2118($context, $setup);
+        }
+
         $setup->endSetup();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function version2118(
+        ModuleContextInterface $context,
+        ModuleDataSetupInterface $setup
+    ) {
+        $setup->getConnection()->insert(
+            $setup->getTable('core_config_data'),
+            [
+                'scope' => 'default',
+                'scope_id' => 0,
+                'path' => 'tnw_marketing/survey/quickbooks_start_date',
+                'value' => date_create()->modify('+7 day')->getTimestamp()
+            ]
+        );
     }
 }

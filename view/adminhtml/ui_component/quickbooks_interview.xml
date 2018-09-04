@@ -24,6 +24,7 @@
         <argument name="data" xsi:type="array">
             <item name="js_config" xsi:type="array">
                 <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+                <item name="type" xsi:type="string">tnw_quickbooksbasic</item>
             </item>
         </argument>
         <settings>
@@ -119,6 +120,21 @@
                 <settings>
                     <label />
                     <dataScope>comments</dataScope>
+                    <dataType>text</dataType>
+                    <placeholder translate="true">Tell us more about you experience?</placeholder>
+                </settings>
+                <formElements>
+                    <textarea>
+                        <settings>
+                            <cols>30</cols>
+                        </settings>
+                    </textarea>
+                </formElements>
+            </field>
+            <field name="module" formElement="hidden">
+                <settings>
+                    <label />
+                    <dataScope>module</dataScope>
                     <dataType>text</dataType>
                     <placeholder translate="true">Tell us more about you experience?</placeholder>
                 </settings>
