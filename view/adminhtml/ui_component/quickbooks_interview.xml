@@ -150,6 +150,18 @@
                 </settings>
             </field>
 
+            <field name="moduleName" formElement="hidden">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="value" xsi:type="string">TNW Quickbooks Basic</item>
+                    </item>
+                </argument>
+                <settings>
+                    <dataScope>moduleName</dataScope>
+                    <dataType>text</dataType>
+                </settings>
+            </field>
+
             <field name="type" formElement="hidden">
                 <argument name="data" xsi:type="array">
                     <item name="config" xsi:type="array">
