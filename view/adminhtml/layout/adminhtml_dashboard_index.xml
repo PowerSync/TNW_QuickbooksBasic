@@ -12,7 +12,7 @@
             <uiComponent name="quickbooks_interview">
                 <visibilityCondition name="can_view_interview" className="TNW\Marketing\Model\Condition\CanViewInterview">
                     <arguments>
-                        <argument name="type" xsi:type="string">quickbooks</argument>
+                        <argument name="module" xsi:type="string">tnw_quickbooksbasic</argument>
                     </arguments>
                 </visibilityCondition>
             </uiComponent>

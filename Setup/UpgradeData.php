@@ -194,7 +194,7 @@ class UpgradeData implements UpgradeDataInterface
             [
                 'scope' => 'default',
                 'scope_id' => 0,
-                'path' => 'tnw_marketing/survey/quickbooks_start_date',
+                'path' => 'tnw_quickbooksbasic/survey/start_date',
                 'value' => date_create()->modify('+7 day')->getTimestamp()
             ]
         );

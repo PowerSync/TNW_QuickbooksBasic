@@ -12,6 +12,11 @@
         </item>
         <item name="label" xsi:type="string" translate="true">Quickbooks Interview</item>
         <item name="template" xsi:type="string">templates/form/collapsible</item>
+        <item name="items" xsi:type="array">
+            <item name="label" xsi:type="string" translate="true">Quickbooks Interview</item>
+            <item name="template" xsi:type="string">templates/form/collapsible</item>
+        </item>
+
     </argument>
     <settings>
         <namespace>quickbooks_interview</namespace>
@@ -24,8 +29,9 @@
         <argument name="data" xsi:type="array">
             <item name="js_config" xsi:type="array">
                 <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
-                <item name="type" xsi:type="string">tnw_quickbooksbasic</item>
             </item>
+            <item name="module" xsi:type="string">tnw_quickbooksbasic</item>
+            <item name="type" xsi:type="string">tnw_quickbooksbasic</item>
         </argument>
         <settings>
             <submitUrl path="Marketing/interview/markUserInterviewed"/>
@@ -131,21 +137,38 @@
                     </textarea>
                 </formElements>
             </field>
+
             <field name="module" formElement="hidden">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="value" xsi:type="string">tnw_quickbooksbasic</item>
+                    </item>
+                </argument>
                 <settings>
-                    <label />
                     <dataScope>module</dataScope>
                     <dataType>text</dataType>
-                    <placeholder translate="true">Tell us more about you experience?</placeholder>
+                </settings>
+            </field>
+
+            <field name="type" formElement="hidden">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="value" xsi:type="string">tnw_marketing</item>
+                    </item>
+                </argument>
+                <settings>
+                    <label />
+                    <dataScope>type</dataScope>
+                    <dataType>text</dataType>
                 </settings>
                 <formElements>
-                    <textarea>
+                    <text>
                         <settings>
-                            <cols>30</cols>
                         </settings>
-                    </textarea>
+                    </text>
                 </formElements>
             </field>
+
         </fieldset>
     </modal>
 </form>
