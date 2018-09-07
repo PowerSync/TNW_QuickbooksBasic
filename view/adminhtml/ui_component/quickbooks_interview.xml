@@ -62,14 +62,12 @@
                 <item name="config" xsi:type="array">
                     <item name="label" xsi:type="string"/>
                     <item name="additionalClasses" xsi:type="string">quick-survey-text</item>
-                    <item name="text" xsi:type="string" translate="true">
-                        <![CDATA[
+                    <item name="text" xsi:type="string" translate="true"><![CDATA[
                         <p>We hope you are enjoying the <a target="_blank" href="https://marketplace.magento.com/tnw-quickbooks.html">FREE QuickBooks Online integration</a>. Did you know that we offer a version of this integration which has a lot more features?</p>
                         <p>Watch this video to get an idea of what you could have available at your fingertips.</p>
                         <p><a target="_blank" href="https://powersync.biz/contact-us">Contact us</a> if you would like to talk to one of our certified QuickBooks specialists or <a target="_blank" href="https://powersync.biz/integrations-magento2-quickbooks/">visit our website</a> to learn more about the paid version.</p>
                         <p class="quick-survey-video-wrapper"><iframe src="https://www.youtube.com/embed/F-6PMuZ1aLs?enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></p>
-                        ]]>
-                    </item>
+                        ]]></item>
                 </item>
             </argument>
         </container>
