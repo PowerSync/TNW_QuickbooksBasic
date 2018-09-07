@@ -12,10 +12,6 @@
         </item>
         <item name="label" xsi:type="string" translate="true">Quickbooks Interview</item>
         <item name="template" xsi:type="string">templates/form/collapsible</item>
-        <item name="items" xsi:type="array">
-            <item name="label" xsi:type="string" translate="true">Quickbooks Interview</item>
-            <item name="template" xsi:type="string">templates/form/collapsible</item>
-        </item>
 
     </argument>
     <settings>
@@ -30,8 +26,6 @@
             <item name="js_config" xsi:type="array">
                 <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
             </item>
-            <item name="module" xsi:type="string">tnw_quickbooksbasic</item>
-            <item name="type" xsi:type="string">tnw_quickbooksbasic</item>
         </argument>
         <settings>
             <submitUrl path="Marketing/interview/markUserInterviewed"/>
