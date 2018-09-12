@@ -9,13 +9,7 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceContainer name="content">
-            <uiComponent name="quickbooks_interview">
-                <visibilityCondition name="can_view_interview" className="TNW\Marketing\Model\Condition\CanViewInterview">
-                    <arguments>
-                        <argument name="module" xsi:type="string">tnw_quickbooksbasic</argument>
-                    </arguments>
-                </visibilityCondition>
-            </uiComponent>
+            <uiComponent name="quickbooks_interview"/>
         </referenceContainer>
     </body>
 </page>
