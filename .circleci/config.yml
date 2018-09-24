@@ -241,21 +241,22 @@ jobs:
             cd /var/www/html/magento2-$MAGENTO_VERSION
             php bin/magento setup:di:compile
       - run:
-          name: Installing Magento EE
-          command: |
-            cd /var/www/html/
-            composer config -g http-basic.repo.magento.com $MAGENTO_REPO_LOGIN $MAGENTO_REPO_PASSWORD
-            composer create-project -s RC --repository-url=https://repo.magento.com/ magento/project-enterprise-edition magento2-ee-$MAGENTO_VERSION $MAGENTO_VERSION
-            cd magento2-ee-$MAGENTO_VERSION
-            ./bin/magento setup:install --backend-frontname admin --db-host 127.0.0.1 --db-prefix tnwee --db-name magento_ee --db-user mage --db-password mage --base-url http://magento-qa.box/ --language en_US --timezone America/Chicago --currency USD --admin-lastname Admin --admin-firstname Admin --admin-email admin@example.com --admin-user admin --admin-password admin123 --cleanup-database --use-rewrites 1
-            ./bin/magento --version
-      - run:
           name: Copy the Extension Files
           command: |
             cd /var/www/html/magento2-ee-$MAGENTO_VERSION
             mkdir -p ./app/code/TNW
             cp -R ~/tnw_extension/modules/* ./app/code/TNW
             ls -la ./app/code/TNW
+      - run:
+          name: Installing Magento EE
+          command: |
+            cd /var/www/html/
+            composer config -g http-basic.repo.magento.com $MAGENTO_REPO_LOGIN $MAGENTO_REPO_PASSWORD
+            composer create-project -s RC --repository-url=https://repo.magento.com/ magento/project-enterprise-edition magento2-ee-$MAGENTO_VERSION $MAGENTO_VERSION
+            cd magento2-ee-$MAGENTO_VERSION
+            ./bin/magento setup:install --backend-frontname admin --db-host 127.0.0.1 --db-prefix tnwee_ --db-name magento_ee --db-user mage --db-password mage --base-url http://magento-qa.box/ --language en_US --timezone America/Chicago --currency USD --admin-lastname Admin --admin-firstname Admin --admin-email admin@example.com --admin-user admin --admin-password admin123 --cleanup-database --use-rewrites 1
+            ./bin/magento --version
+
       - run:
           name: Install the Extension
           command: |
