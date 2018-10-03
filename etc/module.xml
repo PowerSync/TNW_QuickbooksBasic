@@ -4,6 +4,7 @@
     <module name="TNW_QuickbooksBasic" setup_version="2.1.18">
         <sequence>
             <module name="Magento_Customer"/>
+            <module name="TNW_Marketing"/>
         </sequence>
     </module>
 </config>
