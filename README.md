@@ -1,5 +1,8 @@
-# Magento 2 and Quickbooks Integration (Starter Pack)
+# Magento 2 and QuickBooks Online Integration (Starter Pack)
 Close the gap to ensure complete and accurate accounting when using QuickBooks Online and Magento 2 platform.
+
+## Requirements
+* Magento >= 2.2
 
 ## How to install
 [Installation instructions](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/590807169/Starter+Pack) can be found on our confluence.
