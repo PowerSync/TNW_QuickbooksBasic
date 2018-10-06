@@ -20,7 +20,7 @@ Feel free to Fork and contrinute to this module and create a pull request so we 
 * Extension tests are included
 * Books Balanced Quicker!
 
-### Paid Version
+#### Paid Version
 More information about the paid version is available on [PowerSync.biz - QuickBooks + Magento 2 Integration](https://powersync.biz/integrations-magento2-quickbooks/) website. Paid version includes the following features:
 * Product & Inventory
 * Invoice & Payment
