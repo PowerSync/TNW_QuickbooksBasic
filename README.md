@@ -2,6 +2,7 @@
 Close the gap to ensure complete and accurate accounting when using QuickBooks Online and Magento 2 platform.
 
 ## Requirements
+* PHP >= 7.0
 * Magento >= 2.2
 
 ## How to install
