@@ -15,7 +15,7 @@ Close the gap to ensure complete and accurate accounting when using QuickBooks O
 * [How to connect to QuickBooks](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/45350947/Configuration+Connecting+to+QuickBooks)
 * [Customer Synchronization](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/45350965/Configuration+Customer+Synchronization)
 * [Switch from Sandbox to Production](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/339804165/Switch+from+Sandbox+to+Production)
-[Additional troubleshooting articles](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/339836929/Troubleshooting) are available as well.
+* [Additional troubleshooting articles](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/339836929/Troubleshooting) are available as well.
 
 ## Contribute to this module
 Feel free to Fork and contrinute to this module and create a pull request so we will merge your changes to `develop` branch.
