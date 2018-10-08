@@ -1,5 +1,6 @@
 # Magento 2 and QuickBooks Online Integration (Starter Pack)
 Close the gap to ensure complete and accurate accounting when using QuickBooks Online and Magento 2 platform.
+[![CircleCI](https://circleci.com/gh/PowerSync/TNW_QuickbooksBasic/tree/master.svg?style=svg&circle-token=5685ad176382f7a924d39e99ae5d292024b5bf24)](https://circleci.com/gh/PowerSync/TNW_QuickbooksBasic/tree/master)
 
 ## Requirements
 * PHP >= 7.0
