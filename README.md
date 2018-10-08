@@ -42,6 +42,7 @@ More information about the paid version is available on [PowerSync.biz - QuickBo
 * Configurable products
 * Tax Multi-Account support
 * Bulk & Scheduled sync
+
 You can [view the demo of our paid verion](https://www.youtube.com/watch?v=F-6PMuZ1aLs) on Youtube.
 
 ## License
