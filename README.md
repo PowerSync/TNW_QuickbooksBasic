@@ -43,7 +43,7 @@ More information about the paid version is available on [PowerSync.biz - QuickBo
 * Tax Multi-Account support
 * Bulk & Scheduled sync
 
-You can [view the demo of our paid verion](https://www.youtube.com/watch?v=F-6PMuZ1aLs) on Youtube.
+You can [view the demo of our paid verion](https://www.youtube.com/watch?v=F-6PMuZ1aLs) on YouTube.
 
 ## License
 [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/)
