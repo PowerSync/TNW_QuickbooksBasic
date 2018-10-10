@@ -9,10 +9,24 @@ Close the gap to ensure complete and accurate accounting when using QuickBooks O
 * Magento >= 2.2
 
 ## How to install
+#### via Magento Marketplace
 You can get this extension from Magento Marketplace by visiting [PowerSync QuickBooks (Basic Plan)](https://marketplace.magento.com/tnw-quickbooks.html) page. Then follow [Installation instructions](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/590807169/Starter+Pack) to install the extension.
 
-##### Installing from Git
-TBD
+#### via Composer (skip Magento Marketplace)
+1. Install our extension
+```
+composer require tnw/quickbooksbasic
+```
+2. Update Magento
+```
+bin/magento setup:upgrade
+bin/magento setup:di:compile
+bin/magento setup:static-content:deploy
+```
+3. Re-index
+```
+bin/magento indexer:reindex
+```
 
 ## How to articles
 * [How to connect to QuickBooks](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/45350947/Configuration+Connecting+to+QuickBooks)
