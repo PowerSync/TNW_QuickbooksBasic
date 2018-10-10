@@ -35,7 +35,7 @@ bin/magento indexer:reindex
 * [Additional troubleshooting articles](https://technweb.atlassian.net/wiki/spaces/IWQ/pages/339836929/Troubleshooting) are available as well.
 
 ## Contribute to this module
-Feel free to Fork and contrinute to this module and create a pull request so we will merge your changes to `develop` branch.
+Feel free to Fork and Contribute to this module and create a pull request so we will merge your changes to `develop` branch.
 
 ## Features
 * Customer Synchronization
@@ -57,7 +57,7 @@ More information about the paid version is available on [PowerSync.biz - QuickBo
 * Tax Multi-Account support
 * Bulk & Scheduled sync
 
-You can [view the demo of our paid verion](https://www.youtube.com/watch?v=F-6PMuZ1aLs) on YouTube.
+You can [view the demo of our paid version](https://www.youtube.com/watch?v=F-6PMuZ1aLs) on YouTube.
 
 ## License
 [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/)
