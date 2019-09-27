@@ -11,7 +11,7 @@ jobs:
             ssh $SSH_USER@$SSH_HOST "./release"
   check-composer-installation:
       docker:
-      - image: circleci/php:7.1-apache-node-browsers
+      - image: circleci/php:7.1-apache-stretch-node-browsers
       - image: circleci/mysql:5.7
         environment:
           MYSQL_PASSWORD: mage
@@ -27,11 +27,12 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt install -y libicu-dev libxml2-dev libxslt1-dev zlib1g-dev libmcrypt-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev
+            sudo apt-get install libfreetype6-dev
       - run:
           name: Install PHP extension
           command: |
             sudo docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
-            sudo docker-php-ext-install -j$(nproc) intl soap xsl zip mcrypt pdo pdo_mysql gd gettext mbstring bcmath
+            sudo -E docker-php-ext-install -j$(nproc) intl soap xsl zip mcrypt pdo pdo_mysql gd gettext mbstring bcmath
       - run:
           name: Configure PHP
           command: |
@@ -47,7 +48,7 @@ jobs:
           command: |
             cd /var/www/html/
             git clone https://github.com/magento/marketplace-eqp magento-coding-standard
-            cd magento-coding-standard
+            cd magento-coding-standard && git checkout -q "2.0.1"
             composer install
       - run:
           name: Wait for DB
@@ -88,11 +89,11 @@ jobs:
           command: |
             cd /var/www/html/magento2-$MAGENTO_VERSION
             php bin/magento setup:di:compile
-
+            php bin/magento deploy:mode:set developer
 
   update-wiki:
     docker:
-      - image: circleci/php:7.1-apache-node-browsers
+      - image: circleci/php:7.1-apache-stretch-node-browsers
     steps:
       - run:
           name: Prepare for wiki update
@@ -149,7 +150,7 @@ jobs:
 
   m225_php71: &php71-base
     docker:
-      - image: circleci/php:7.1-apache-node-browsers
+      - image: circleci/php:7.1-apache-stretch-node-browsers
       - image: circleci/mysql:5.7
         environment:
           MYSQL_PASSWORD: mage
@@ -190,7 +191,7 @@ jobs:
           name: Install PHP extension
           command: |
             sudo docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
-            sudo docker-php-ext-install -j$(nproc) intl soap xsl zip mcrypt pdo pdo_mysql gd gettext mbstring bcmath
+            sudo -E docker-php-ext-install -j$(nproc) intl soap xsl zip mcrypt pdo pdo_mysql gd gettext mbstring bcmath
       - run:
           name: Configure PHP
           command: |
@@ -206,7 +207,7 @@ jobs:
           command: |
             cd /var/www/html/
             git clone https://github.com/magento/marketplace-eqp magento-coding-standard
-            cd magento-coding-standard
+            cd magento-coding-standard && git checkout -q "2.0.1"
             composer install
       - run:
           name: Wait for DB
@@ -300,7 +301,7 @@ jobs:
   m224_php70: &php70-base
     <<: *php71-base
     docker:
-      - image: circleci/php:7.0-apache-node-browsers
+      - image: circleci/php:7.0-apache-stretch-node-browsers
       - image: circleci/mysql:5.7
         environment:
           MYSQL_PASSWORD: mage
