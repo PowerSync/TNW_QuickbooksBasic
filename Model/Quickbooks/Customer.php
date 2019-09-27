@@ -213,6 +213,8 @@ class Customer extends Quickbooks implements EntityInterface
             return [];
         }
 
+        $companyName = $this->correctCompanyName($companyName);
+
         $parent = $this->lookupQuickbooksParentByCompanyOrEmail($companyName, $customer->getEmail());
         if (isset($parent['Id'])) {
             $data['Id'] = $parent['Id'];
@@ -228,6 +230,20 @@ class Customer extends Quickbooks implements EntityInterface
         }
 
         return ['data' => $data, 'uri' => $uri];
+    }
+
+    /**
+     * @param $companyName
+     * @return mixed
+     */
+    public function correctCompanyName($companyName)
+    {
+        /**
+         * https://quickbooks.intuit.com/learn-support/en-us/manage-intuit-account/acceptable-characters-in-quickbooks-online/00/186243
+         */
+        $companyName = preg_replace("|[^a-zA-Z0-9,\.?@&!#'`\*\(\)_\-;+]|", " ", $companyName);
+
+        return $companyName;
     }
 
     /**
@@ -520,6 +536,7 @@ class Customer extends Quickbooks implements EntityInterface
             $this->getCustomerName($customer);
         $id = ' (' . $customer->getId() . ')';
         $displayName = $customerName . $id;
+        $displayName = $this->correctCompanyName($displayName);
         if (\mb_strlen($displayName) > self::DISPLAY_NAME_MAX_LENGTH) {
             $customerNameMaxLen = self::DISPLAY_NAME_MAX_LENGTH - \mb_strlen($id);
             $customerName = \mb_substr($customerName, 0, $customerNameMaxLen - 3);
