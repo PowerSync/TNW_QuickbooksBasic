@@ -23,7 +23,8 @@ use TNW\QuickbooksBasic\Model\Quickbooks\SyncManager;
  */
 class CustomerRepository
 {
-    const SUCCESS_MESSAGE = "Quickbooks: Magento customer '%1' was successfully synchronized";
+    const SUCCESS_MESSAGE_REALTIME = "Quickbooks: Magento customer '%1' was successfully synchronized";
+    const SUCCESS_MESSAGE_QUEUE = "Quickbooks: Magento customer '%1' was added to queue";
 
     /** @var LoggerInterface */
     protected $logger;
@@ -117,19 +118,19 @@ class CustomerRepository
         ) {
             try {
                 if ($quickbooksCustomerActive) {
-                    $showResultMessage = $isAdminArea && !$this->isInlineEditor();
+                    $showResultMessage = false;
                     $responseBody = $this->syncManager->syncObject($customer, $showResultMessage);
 
                     if (!empty($responseBody)
-                        && $showResultMessage
-                        && $this->syncManager->syncTypeRealTime()
                     ) {
+                        $successMessage = ($this->syncManager->syncTypeRealTime()) ?
+                            self::SUCCESS_MESSAGE_REALTIME : self::SUCCESS_MESSAGE_QUEUE;
                         /** @var string $fullName */
                         $fullName = $customer->getFirstname() . ' ' .
                             $customer->getLastname();
 
                         $this->messageManager->addSuccessMessage(
-                            __(self::SUCCESS_MESSAGE, $fullName)
+                            __($successMessage, $fullName)
                         );
                     }
                 } else {
