@@ -5,6 +5,9 @@
     <type name="Magento\Customer\Api\AddressRepositoryInterface">
         <plugin name="QuickbooksAddressRepository" type="TNW\QuickbooksBasic\Plugin\AddressRepository" sortOrder="100"/>
     </type>
+    <type name="Magento\Framework\Notification\MessageInterface">
+        <plugin name="QuickbooksSystemMessage" type="TNW\QuickbooksBasic\Plugin\SystemMessage" disabled="false" sortOrder="10"/>
+    </type>
     <type name="Magento\Framework\View\Element\Messages">
         <plugin name="tnw_quickbooks_plugin_quickbookssyncmessage"
                 type="TNW\QuickbooksBasic\Plugin\QuickbooksSyncMessage"
