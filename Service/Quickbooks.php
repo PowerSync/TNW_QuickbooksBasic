@@ -25,6 +25,9 @@ use TNW\QuickbooksBasic\TokenData;
  */
 class Quickbooks
 {
+    /**
+     *
+     */
     const MAX_RESULTS_QUERY_LIMITATION_STRING = ' MAXRESULTS 1000';
 
     /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
@@ -52,8 +55,22 @@ class Quickbooks
     protected $state;
 
     /**
+     * @var \OAuth\Common\Http\Uri\UriFactory
+     */
+    protected $urlFactory;
+
+    /**
+     * @var \OAuth\Common\Http\Client\CurlClientFactory
+     */
+    protected $httpClientFactory;
+
+    /**
+     * @var \OAuth\OAuth2\Token\StdOAuth2TokenFactory
+     */
+    protected $auth2TokenFactory;
+
+    /**
      * Quickbooks constructor.
-     *
      * @param ScopeConfigInterface $config
      * @param LoggerInterface $logger
      * @param TokenData $tokenData
@@ -61,7 +78,10 @@ class Quickbooks
      * @param ManagerInterface $messageManager
      * @param DecoderInterface $decoder
      * @param Registry $registry
+     * @param \OAuth\Common\Http\Uri\UriFactory $urlFactory
      * @param State $state
+     * @param \OAuth\Common\Http\Client\CurlClientFactory $httpClientFactory
+     * @param \OAuth\OAuth2\Token\StdOAuth2TokenFactory $auth2TokenFactory
      */
     public function __construct(
         ScopeConfigInterface $config,
@@ -71,8 +91,14 @@ class Quickbooks
         ManagerInterface $messageManager,
         DecoderInterface $decoder,
         Registry $registry,
-        State $state
+        \OAuth\Common\Http\Uri\UriFactory $urlFactory,
+        State $state,
+        \OAuth\Common\Http\Client\CurlClientFactory $httpClientFactory,
+        \OAuth\OAuth2\Token\StdOAuth2TokenFactory $auth2TokenFactory
     ) {
+        $this->auth2TokenFactory = $auth2TokenFactory;
+        $this->httpClientFactory = $httpClientFactory;
+        $this->urlFactory = $urlFactory;
         $this->logger = $logger;
         $this->config = $config;
         $this->tokenData = $tokenData;
@@ -85,11 +111,10 @@ class Quickbooks
 
     /**
      * @param $apiRead
-     * @param $quickbooksId
-     *
-     * @return \Zend_Http_Response
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Zend_Http_Client_Exception
+     * @param int $quickbooksId
+     * @return string
+     * @throws LocalizedException
+     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function read($apiRead, $quickbooksId = 0)
     {
@@ -104,51 +129,36 @@ class Quickbooks
             $quickbooksId
         ], $apiRead);
 
-        /** @var \Zend_Oauth_Token_Access $token */
         $token = $this->getAccessToken();
 
         if (!$token) {
             throw new \Magento\Framework\Exception\LocalizedException(__('Unknown access token'));
         }
 
-        $urlPart = parse_url($apiUrl . $requestUri);
-
-        $parameters = [];
-        if (isset($urlPart['query'])) {
-            parse_str($urlPart['query'], $parameters);
+        if ($token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_NEVER_EXPIRES
+            && $token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_UNKNOWN
+            && time() > $token->getEndOfLife()
+        ) {
+            $token = $this->refreshToken($token);
         }
 
-        /** @var \Zend_Oauth_Client $client */
-        $client = $token->getHttpClient($this->quickbooksConfig->getConfig())
-            ->setMethod(\Zend_Http_Client::GET)
-            ->setUri("{$urlPart['scheme']}://{$urlPart['host']}{$urlPart['path']}")
-            ->setParameterGet($parameters)
-            ->setHeaders('Accept', 'application/json');
-
-        /** @var \Zend_Http_Response $response */
-        $response = $client->request();
-
-        $this->logger->debug('QUICKBOOKS REQUEST URL:' . $client->getUri());
-        $this->logger->debug('QUICKBOOKS REQUEST:' . $client->getLastRequest());
-        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $response->getStatus());
-        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $response->getBody());
+        $response = $this->httpClientFactory->create()->retrieveResponse(
+            $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
+            null,
+            [
+                'Authorization' => 'Bearer ' . $token->getAccessToken(),
+                'Accept' => 'application/json'
+            ],
+            \Zend_Http_Client::GET
+        );
 
         return $response;
+        //TODO: resolve  debug?
     }
 
-    /**
-     * @return null|\Zend_Oauth_Token_Access
-     */
     public function getAccessToken()
     {
-        /** @var \Zend_Oauth_Token_Access $accessToken */
-        $accessToken = $this->tokenData->getAccessToken();
-
-        if (!($accessToken instanceof \Zend_Oauth_Token_Access)) {
-            return null;
-        }
-
-        return $accessToken;
+        return $this->tokenData->getAccessToken();
     }
 
     /**
@@ -156,15 +166,18 @@ class Quickbooks
      */
     public function isAccessTokenNeedRenewal()
     {
-        return $this->tokenData->isAccessTokenNeedRenewal();
+        $token = $this->getAccessToken();
+        return ($token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_NEVER_EXPIRES
+            && $token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_UNKNOWN
+            && time() > $token->getEndOfLife()
+        );
     }
 
     /**
      * @param $queryString
-     *
-     * @return \Zend_Http_Response
-     * @throws \Zend_Http_Client_Exception
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return string
+     * @throws LocalizedException
+     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function query($queryString)
     {
@@ -182,39 +195,43 @@ class Quickbooks
             ModelQuickbooks::API_QUERY
         );
 
-        /** @var \Zend_Oauth_Token_Access $token */
+        /** @var \OAuth\Common\Token\TokenInterface $token */
         $token = $this->getAccessToken();
 
         if (!$token) {
             throw new \Magento\Framework\Exception\LocalizedException(__('Unknown access token'));
         }
 
-        $queryString.= self::MAX_RESULTS_QUERY_LIMITATION_STRING;
+        if ($token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_NEVER_EXPIRES
+            && $token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_UNKNOWN
+            && time() > $token->getEndOfLife()
+        ) {
+            $token = $this->refreshToken($token);
+        }
 
-        /** @var \Zend_Oauth_Client $client */
-        $client = $token->getHttpClient($this->quickbooksConfig->getConfig())
-            ->setUri(htmlentities($apiUrl . $requestUri))
-            ->setMethod(\Zend_Http_Client::POST)
-            ->setRawData($queryString, 'application/text');
+        $queryString .= self::MAX_RESULTS_QUERY_LIMITATION_STRING;
 
-        /** @var \Zend_Http_Response $response */
-        $response = $client->request();
-
-        $this->logger->debug('QUICKBOOKS REQUEST URL:' . $client->getUri());
-        $this->logger->debug('QUICKBOOKS REQUEST:' . $client->getLastRequest());
-        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $response->getStatus());
-        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $response->getBody());
+        $response = $this->httpClientFactory->create()->retrieveResponse(
+            $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
+            $queryString,
+            [
+                'Authorization' => 'Bearer ' . $token->getAccessToken(),
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/text'
+            ],
+            \Zend_Http_Client::POST
+        );
 
         return $response;
+        //TODO: resolve  debug?
     }
 
     /**
      * @param $encodedData
      * @param $uri
-     *
-     * @return \Zend_Http_Response
-     * @throws \Zend_Http_Client_Exception
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return string
+     * @throws LocalizedException
+     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function post($encodedData, $uri)
     {
@@ -242,60 +259,73 @@ class Quickbooks
             throw new \Magento\Framework\Exception\LocalizedException(__('Unknown access token'));
         }
 
-        /** @var \Zend_Oauth_Client $client */
-        $client = $token->getHttpClient($this->quickbooksConfig->getConfig())
-            ->setMethod(\Zend_Http_Client::POST)
-            ->setHeaders('Accept', 'application/json')
-            ->setRawData($encodedData, 'application/json')
-            ->setUri($apiUrl . $uriComponents['uri']);
-
-        if (isset($uriComponents['query'])) {
-            $client->setParameterGet(
-                $uriComponents['query']['key'],
-                $uriComponents['query']['value']
-            );
+        if ($token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_NEVER_EXPIRES
+            && $token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_UNKNOWN
+            && time() > $token->getEndOfLife()
+        ) {
+            $token = $this->refreshToken($token);
         }
 
-        /** @var \Zend_Http_Response $response */
-        $response = $client->request();
+        /** @var $httpClient \OAuth\Common\Http\Client\CurlClient */
+        $httpClient = $this->httpClientFactory->create();
+        $url = $this->urlFactory->createFromAbsolute($apiUrl . $uriComponents['uri']);
 
-        $this->logger->debug('QUICKBOOKS REQUEST URL: ' . $client->getUri());
-        $this->logger->debug('QUICKBOOKS REQUEST:' . $client->getLastRequest());
-        $this->logger->debug('QUICKBOOKS REQUEST BODY: ' . $encodedData);
-        $this->logger->debug('QUICKBOOKS RESPONSE STATUS: ' . $response->getStatus());
-        $this->logger->debug('QUICKBOOKS RESPONSE BODY: ' . $response->getBody());
+        if (isset($uriComponents['query'])) {
+            $url->addToQuery($uriComponents['query']['key'], $uriComponents['query']['value']);
+        }
 
+        $response = $httpClient->retrieveResponse(
+            $url,
+            $encodedData,
+            [
+                'Authorization' => 'Bearer ' . $token->getAccessToken(),
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json'
+            ],
+            \Zend_Http_Client::POST
+        );
+        //TODO: resolve  debug?
         return $response;
     }
 
     /**
-     * @param \Zend_Http_Response $response
-     *
-     * @return array
+     * @param $response
+     * @return array|mixed
+     * @throws LocalizedException
      */
-    public function checkResponse(\Zend_Http_Response $response)
+    public function checkResponse($response)
     {
         /** @var array $result */
         $result = [];
 
         if ($response) {
-            /** @var string $responseBody */
-            $responseBody = $response->getBody();
-
             /** @var string $responseBodyType */
-            $responseBodyType = $this->isJson($responseBody) ? 'json' : 'xml';
+            $responseBodyType = $this->isJson($response) ? 'json' : 'xml';
 
             switch ($responseBodyType) {
                 case 'xml':
-                    $result = $this->processXMLResponse($response);
+                    $result = $this->processXML($response);
                     break;
                 case 'json':
-                    $result = $this->processJSONResponse($response);
+                    $result = $this->processJSON($response);
                     break;
             }
         }
-
         return $result;
+    }
+
+    /**
+     * @param $arr
+     * @return array
+     */
+    public function arrayChangeKeyCaseRecursive($arr)
+    {
+        return array_map(function ($item) {
+            if (is_array($item)) {
+                $item = $this->arrayChangeKeyCaseRecursive($item);
+            }
+            return $item;
+        }, array_change_key_case($arr));
     }
 
     /**
@@ -312,23 +342,33 @@ class Quickbooks
 
     /**
      * @param RequestInterface $request
-     *
-     * @return Quickbooks
-     * @throws \Zend_Oauth_Exception
+     * @return $this
+     * @throws Exception\InvalidStateException
+     * @throws Exception\TokenResponseException
+     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function grant(RequestInterface $request)
     {
-        /** @var \Zend_Oauth_Consumer $consumer */
-        $consumer = $this->getConsumer();
+        if ($request->getParam('state') != $this->tokenData->getAuthTokenState()) {
+            throw new Exception\InvalidStateException(__('Invalid State.'));
+        }
 
-        /** @var \Zend_Oauth_Token_Access $token */
-        $token = $consumer->getAccessToken(
-            $request->getParams(),
-            $this->getRequestToken()
+        $bodyParams = array_merge(
+            [
+                'code' => $request->getParam('code'),
+                'grant_type' => 'authorization_code',
+            ],
+            $this->quickbooksConfig->getConfig()
         );
 
-        $this->setAccessToken($token);
-        $this->setRequestToken();
+        $responseBody = $this->httpClientFactory->create()->retrieveResponse(
+            $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL),
+            $bodyParams,
+            []
+        );
+
+        $this->tokenData->setAuthTokenState('');
+        $this->setAccessToken($this->parseAccessTokenResponse($responseBody));
 
         $companyId = $request->getParam('realmId');
 
@@ -338,20 +378,10 @@ class Quickbooks
     }
 
     /**
-     * @return \Zend_Oauth_Token_Request
+     * @param $token
+     * @return TokenData
      */
-    public function getRequestToken()
-    {
-        return $this->tokenData->getRequestToken();
-    }
-
-    /**
-     * @param \Zend_Oauth_Token_Access $token
-     *
-     * @return \TNW\QuickbooksBasic\TokenData
-     * @throws \Exception
-     */
-    public function setAccessToken(\Zend_Oauth_Token_Access $token)
+    public function setAccessToken($token)
     {
         return $this->tokenData->setAccessToken($token);
     }
@@ -368,24 +398,21 @@ class Quickbooks
     }
 
     /**
-     * @param \Zend_Oauth_Token_Request $token
-     *
-     * @return \TNW\QuickbooksBasic\TokenData
-     */
-    public function setRequestToken(\Zend_Oauth_Token_Request $token = null)
-    {
-        return $this->tokenData->setRequestToken($token);
-    }
-
-    /**
      * @return string
      */
     public function getRequestTokenUrl()
     {
-        $consumer = $this->getConsumer();
-        $this->setRequestToken($consumer->getRequestToken());
+        $parameters = $this->quickbooksConfig->getConfig();
+        // Build the url
+        $url = $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::AUTH_URL);
+        foreach ($parameters as $key => $val) {
+            $url->addToQuery($key, $val);
+        }
+        $state = md5(rand());
+        $url->addToQuery('state', $state);
+        $this->tokenData->setAuthTokenState($state);
 
-        return $consumer->getRedirectUrl();
+        return $url->getAbsoluteUri();
     }
 
     /**
@@ -393,143 +420,86 @@ class Quickbooks
      */
     public function reconnect()
     {
-        /** @var string $reconnectUrl */
-        $reconnectUrl =
-            'https://appcenter.intuit.com/api/v1/connection/reconnect';
-
-        /** @var \Zend_Oauth_Token_Access $token */
-        $token = $this->getAccessToken();
-
-        if (!$token) {
-            return [];
-        }
-
         try {
-            /** @var \Zend_Oauth_Client $client */
-            $client = $token->getHttpClient(
-                $this->quickbooksConfig->getConfig()
-            );
-            $client->setUri($reconnectUrl);
-            $client->setMethod(\Zend_Http_Client::GET);
-            $client->setHeaders('Accept', 'application/json');
-
-            /** @var \Zend_Http_Response $response */
-            $response = $client->request();
+            $result = $this->refreshToken();
         } catch (\Exception $e) {
             return ['error' => 'true', 'message' => $e->getMessage()];
         }
-
-        $this->logger->debug(
-            'QUICKBOOKS REQUEST URL:' . $reconnectUrl
-        );
-        $this->logger->debug('QUICKBOOKS REQUEST:' . $client->getLastRequest());
-
-        $this->logger->debug(
-            'QUICKBOOKS RESPONSE STATUS:' . $response->getStatus()
-        );
-        $this->logger->debug(
-            'QUICKBOOKS RESPONSE BODY:' . $response->getBody()
-        );
-
-        $responseBody = $this->checkResponse($response);
-
-        if (isset($responseBody['ErrorCode']) &&
-            $responseBody['ErrorCode'] == 0
-        ) {
-            $token->setToken($responseBody['OAuthToken'])->setTokenSecret(
-                $responseBody['OAuthTokenSecret']
-            );
-
-            /**
-             * save access token and renew date
-             */
-            $this->setAccessToken($token);
-
-            /** @var array $result */
-            $result = [
-                'success' => 'true',
-                'message' => 'Reconnection has been done.',
-            ];
-        } else {
-            $errorCode = isset($responseBody['ErrorCode']) ?
-                $responseBody['ErrorCode'] :
-                null;
-
-            $errorMessage = '';
-
-            if ($errorCode) {
-                switch ($errorCode) {
-                    case 270:
-                        $errorMessage = 'The OAuth access token has expired.';
-                        break;
-                    case 212:
-                        $errorMessage = 'The request is made outside the 30-day window bounds.';
-                        break;
-                    case 22:
-                        $errorMessage = 'The API requires authorization.';
-                        break;
-                    case 24:
-                        $errorMessage = 'The app is not approved for the API.';
-                        break;
-                }
-            }
-
-            if (!$errorMessage) {
-                $errorMessage = isset($responseBody['ErrorMessage'])
-                    ? $responseBody['ErrorMessage']
-                    : 'There was error during the request.';
-            }
-
-            /** @var array $result */
-            $result = ['error' => 'true', 'message' => $errorMessage];
-        }
-
         return $result;
     }
 
     /**
-     * Disconnecting from QuickBooks
-     *
+     * @param null $token
+     * @return mixed
+     * @throws Exception\TokenResponseException
+     * @throws \OAuth\Common\Http\Exception\TokenResponseException
+     */
+    public function refreshToken($token = null)
+    {
+        if ($token === null) {
+            $token = $this->getAccessToken();
+        }
+        $refreshToken = $token->getRefreshToken();
+
+        if (empty($refreshToken)) {
+            throw new \Exception(__('Missing Refresh Token'));
+        }
+
+        $bodyParams = array_merge(
+            [
+                'refresh_token' => $refreshToken,
+                'grant_type' => 'refresh_token',
+            ],
+            $this->quickbooksConfig->getConfig()
+        );
+
+        $responseBody = $this->httpClientFactory->create()->retrieveResponse(
+            $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL),
+            $bodyParams,
+            []
+        );
+
+        $accessToken = $this->parseAccessTokenResponse($responseBody);
+        $this->setAccessToken($accessToken);
+        return $accessToken;
+    }
+
+    /**
      * @return array
+     * @throws LocalizedException
      */
     public function disconnect()
     {
-        /** @var string $disconnectUrl */
-        $disconnectUrl =
-            'https://appcenter.intuit.com/api/v1/connection/disconnect';
-
-        /** @var \Zend_Oauth_Token_Access $token */
         $token = $this->getAccessToken();
 
         if (!$token) {
             return [];
         }
-
         try {
-            /** @var \Zend_Oauth_Client $client */
-            $client = $token->getHttpClient(
-                $this->quickbooksConfig->getConfig()
+            $config = $this->quickbooksConfig->getConfig();
+            $response = $this->httpClientFactory->create()->retrieveResponse(
+                $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL),
+                json_encode(['token' => $token->getAccessToken()]),
+                [
+                    'Authorization' => 'Basic ' . base64_encode($config['client_id'] . ":" . $config['client_secret']),
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json'
+                ],
+                \Zend_Http_Client::POST
             );
-            $client->setUri($disconnectUrl);
-            $client->setMethod(\Zend_Http_Client::GET);
-            $client->setHeaders('Accept', 'application/json');
-
-            /** @var \Zend_Http_Response $response */
-            $response = $client->request();
+            $result = [
+                'success' => 'true',
+                'message' => 'Disconnected Successfully!',
+            ];
         } catch (\Exception $e) {
             return ['error' => 'true', 'message' => $e->getMessage()];
         }
 
         $this->logger->debug(
-            'QUICKBOOKS REQUEST URL:' . $disconnectUrl
-        );
-        $this->logger->debug('QUICKBOOKS REQUEST:' . $client->getLastRequest());
-
-        $this->logger->debug(
-            'QUICKBOOKS RESPONSE STATUS:' . $response->getStatus()
+            'QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL
         );
         $this->logger->debug(
-            'QUICKBOOKS RESPONSE BODY:' . $response->getBody()
+            'QUICKBOOKS RESPONSE BODY:' . $response
         );
 
         $responseBody = $this->checkResponse($response);
@@ -562,23 +532,25 @@ class Quickbooks
                 }
             }
 
-            if (!$errorMessage) {
+            if (!$errorMessage && $errorCode) {
                 $errorMessage = isset($responseBody['ErrorMessage'])
                     ? $responseBody['ErrorMessage']
                     : 'There was error during the request.';
             }
 
-            /** @var array $result */
-            $result = ['error' => 'true', 'message' => $errorMessage];
+            if ($errorMessage) {
+                /** @var array $result */
+                $result = ['error' => 'true', 'message' => $errorMessage];
+            }
         }
 
         return $result;
     }
 
     /**
-     * @param string $companyId
-     *
-     * @return \TNW\QuickbooksBasic\TokenData
+     * @param $companyId
+     * @return TokenData
+     * @throws \Exception
      */
     public function setCompanyId($companyId)
     {
@@ -586,8 +558,7 @@ class Quickbooks
     }
 
     /**
-     * @param string $uri
-     *
+     * @param $uri
      * @return array
      */
     protected function prepareUri($uri)
@@ -629,13 +600,51 @@ class Quickbooks
     }
 
     /**
-     * @return \Zend_Oauth_Consumer
+     * @return \OAuth\Common\Consumer\Credentials
      */
     protected function getConsumer()
     {
         return $this->tokenData->getConsumer(
             $this->quickbooksConfig->getConfig()
         );
+    }
+
+
+    /**
+     * @param $responseBody
+     * @return mixed
+     * @throws Exception\TokenResponseException
+     */
+    protected function parseAccessTokenResponse($responseBody)
+    {
+        $data = json_decode($responseBody, true);
+
+        if (null === $data || !is_array($data)) {
+            throw new Exception\TokenResponseException(__('Unable to parse response.'));
+        } elseif (isset($data['error_description']) || isset($data['error'])) {
+            throw new Exception\TokenResponseException(
+                __(
+                    'Error in retrieving token: "%1"',
+                    isset($data['error_description']) ? $data['error_description'] : $data['error']
+                )
+            );
+        }
+
+        $token = $this->auth2TokenFactory->create();
+        $token->setAccessToken($data['access_token']);
+        $token->setLifeTime($data['expires_in']);
+
+        if (isset($data['refresh_token'])) {
+            $token->setRefreshToken($data['refresh_token']);
+            unset($data['refresh_token']);
+        }
+
+        unset($data['access_token']);
+        unset($data['expires_in']);
+
+        $token->setExtraParams($data);
+
+        return $token;
     }
 
     /**
@@ -684,12 +693,46 @@ class Quickbooks
 
     /**
      * @param \Zend_Http_Response $response
+     *
+     * @return array
+     * @throws LocalizedException
+     */
+    private function processXML($response)
+    {
+        libxml_use_internal_errors(true);
+
+        $xml = simplexml_load_string($response);
+        if (!$xml) {
+            $error = implode('; ', array_map(function (\LibXMLError $error) {
+                return sprintf('Code: %s. Message: %s', $error->code, trim($error->message));
+            }, libxml_get_errors()));
+
+            libxml_clear_errors();
+            throw new LocalizedException(__('XML Response Parse error: %1', $error));
+        }
+
+        /** @var array $result */
+        $result = json_decode(json_encode((array)$xml), 1);
+        return $result;
+    }
+
+    /**
+     * @param $responseBody
+     * @return mixed
+     */
+    private function processJSON($responseBody)
+    {
+        return $this->jsonDecoder->decode($responseBody);
+    }
+
+    /**
+     * @param \Zend_Http_Response $response
      * @param $result
      * @return mixed
      */
     protected function parseResult($response, $result)
     {
-        $resultLowCase= $this->arrayChangeKeyCaseRecursive($result);
+        $resultLowCase = $this->arrayChangeKeyCaseRecursive($result);
 
         if ($response->getStatus() !== 200) {
 
@@ -720,18 +763,5 @@ class Quickbooks
         }
 
         return $result;
-    }
-
-    /**
-     * @param $arr
-     * @return array
-     */
-    public function arrayChangeKeyCaseRecursive($arr)
-    {
-        return array_map(function ($item) {
-            if (is_array($item))
-                $item = $this->arrayChangeKeyCaseRecursive($item);
-            return $item;
-        }, array_change_key_case($arr));
     }
 }

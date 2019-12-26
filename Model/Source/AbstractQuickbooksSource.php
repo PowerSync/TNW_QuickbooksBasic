@@ -141,7 +141,7 @@ abstract class AbstractQuickbooksSource extends AbstractSource
      */
     public function querySourceList()
     {
-        if (!($this->quickbooks->getAccessToken() instanceof \Zend_Oauth_Token_Access)) {
+        if (!$this->quickbooks->getAccessToken()) {
             return [];
         }
 

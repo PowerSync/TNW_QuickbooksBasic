@@ -1023,33 +1023,6 @@ class QuickbooksTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(TokenData::class, $result);
     }
 
-    public function testGetRequestToken()
-    {
-        $token = new \Zend_Oauth_Token_Request();
-
-        $this->tokenData->expects($this->once())
-            ->method('getRequestToken')
-            ->willReturn($token);
-
-        $result = $this->quickbooksService->getRequestToken();
-
-        $this->assertEquals($token, $result);
-    }
-
-    public function testSetRequestToken()
-    {
-        $token = new \Zend_Oauth_Token_Request();
-
-        $this->tokenData->expects($this->once())
-            ->method('setRequestToken')
-            ->with($token)
-            ->willReturn($this->tokenData);
-
-        $result = $this->quickbooksService->setRequestToken($token);
-
-        $this->assertInstanceOf(TokenData::class, $result);
-    }
-
     public function testGetRequestTokenUrl()
     {
         $redirectUrl = 'testRedirectUrl';

@@ -11,6 +11,8 @@
                 <url_api_quickbooks>https://quickbooks.api.intuit.com/v3/</url_api_quickbooks>
                 <url_reconnect>https://appcenter.intuit.com/api/v1/connection/reconnect</url_reconnect>
                 <environment>0</environment>
+                <client_id backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <client_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <timezone_for_date>America/Los_Angeles</timezone_for_date>
             </general>
             <advanced>

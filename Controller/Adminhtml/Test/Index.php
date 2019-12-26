@@ -52,9 +52,6 @@ class Index extends Quickbooks
         $resultJson = $this->resultJsonFactory->create();
         try {
             $response = $this->quickbooksCompany->read();
-            if ($response->getStatus() !== 200) {
-                throw new \Exception($response->getMessage());
-            }
             $response = [
                 'success' => 'true',
                 'message' => 'Connection established.',

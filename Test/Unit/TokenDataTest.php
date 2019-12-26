@@ -86,67 +86,6 @@ class TokenDataTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf(TokenData::class, $result);
     }
 
-    /**
-     * @covers TNW\QuickbooksBasic\TokenData::getRequestToken
-     */
-    public function testGetRequestToken()
-    {
-        $data = new \Zend_Oauth_Token_Access();
-        $data = serialize($data);
-
-        $this->config->expects($this->once())
-            ->method('getValue')
-            ->with($this->identicalTo('quickbooks/data/token_request'))
-            ->willReturn($data);
-
-        $result = $this->tokenData->getRequestToken();
-
-        $this->assertInstanceOf(\Zend_Oauth_Token_Access::class, $result);
-    }
-
-    /**
-     * @covers TNW\QuickbooksBasic\TokenData::setRequestToken
-     */
-    public function testSetRequestToken()
-    {
-        $token = new \Zend_Oauth_Token_Request();
-        $serializedToken = serialize($token);
-
-        $config = $this->getMockBuilder(Config::class)
-            ->setMethods(['setDataByPath', 'save'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $config->expects($this->once())
-            ->method('setDataByPath')
-            ->with('quickbooks/data/token_request', $serializedToken)
-            ->willReturn(null);
-        $config->expects($this->once())
-            ->method('save')
-            ->willReturn(null);
-
-        $this->configFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($config);
-
-        $result = $this->tokenData->setRequestToken($token);
-
-        $this->assertInstanceOf(TokenData::class, $result);
-    }
-
-    /**
-     * @covers TNW\QuickbooksBasic\TokenData::getConsumer
-     */
-    public function testGetConsumer()
-    {
-        $config = [
-            'config' => 'testConfig',
-        ];
-
-        $result = $this->tokenData->getConsumer($config);
-
-        $this->assertInstanceOf(\Zend_Oauth_Consumer::class, $result);
-    }
-
     protected function setUp()
     {
         $this->config = $this->getMockBuilder(ScopeConfigInterface::class)
