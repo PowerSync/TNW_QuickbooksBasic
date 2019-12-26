@@ -35,13 +35,12 @@ class Quickbooks
     const XML_PATH_QUICKBOOKS_GENERAL_COMPANY_ID = 'quickbooks/general/company_id';
     const XML_PATH_QUICKBOOKS_GENERAL_TIMEZONE_FOR_DATE = 'quickbooks/general/timezone_for_date';
 
-    const XML_PATH_QUICKBOOKS_DATA_TOKEN_REQUEST = 'quickbooks/data/token_request';
+    const XML_PATH_QUICKBOOKS_DATA_TOKEN_AUTH = 'quickbooks/data/auth_token_state';
     const XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS = 'quickbooks/data/token_access';
     const XML_PATH_QUICKBOOKS_DATE_LAST_TIME_GET_DATA_TOKEN_ACCESS = 'quickbooks/data/token_access_last_date';
 
     const XML_PATH_QUICKBOOKS_ENVIRONMENT = 'quickbooks/general/environment';
     /** @codingStandardsIgnoreEnd */
-    
     const PROTOCOL = 'https://';
     const QUICKBOOKS_URL = 'quickbooks/general/quickbooks_url';
 
@@ -145,26 +144,6 @@ class Quickbooks
     }
 
     /**
-     * @return \Zend_Oauth_Token_Request
-     */
-    public function getRequestToken()
-    {
-        return $this->quickbooksService->getRequestToken();
-    }
-
-    /**
-     * @param \Zend_Oauth_Token_Request $token
-     *
-     * @return $this
-     */
-    public function setRequestToken(\Zend_Oauth_Token_Request $token)
-    {
-        $this->quickbooksService->setRequestToken($token);
-
-        return $this;
-    }
-
-    /**
      * @return null|\Zend_Oauth_Token_Access
      */
     public function getAccessToken()
@@ -202,8 +181,10 @@ class Quickbooks
 
     /**
      * @param RequestInterface $request
-     *
      * @return $this
+     * @throws \OAuth\Common\Http\Exception\TokenResponseException
+     * @throws \TNW\QuickbooksBasic\Service\Exception\InvalidStateException
+     * @throws \TNW\QuickbooksBasic\Service\Exception\TokenResponseException
      */
     public function grant(RequestInterface $request)
     {
@@ -229,18 +210,20 @@ class Quickbooks
     }
 
     /**
-     * @param string $queryString
-     *
-     * @return \Zend_Http_Response
-     * @throws \Zend_Http_Client_Exception
+     * @param $queryString
+     * @return string
      * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function query($queryString)
     {
         return $this->quickbooksService->query($queryString);
     }
 
-
+    /**
+     * @param \Exception $e
+     * @throws \Exception
+     */
     public function throwQuickbooksException(\Exception $e)
     {
         $this->logger->error($e->getMessage());
@@ -248,10 +231,9 @@ class Quickbooks
     }
 
     /**
-     * Add error
-     * @param array $entityIdBIdAssoc
-     * @param array $errors
-     * @param string|null $message
+     * @param $entityIdBIdAssoc
+     * @param $errors
+     * @param null $message
      * @return array
      */
     protected function handleBatchError($entityIdBIdAssoc, $errors, $message = null)
@@ -285,7 +267,7 @@ class Quickbooks
             : "";
 
         $error = [
-            'message' => $message.' Detail:'.$detail,
+            'message' => $message . ' Detail:' . $detail,
             'object' => $object
         ];
 

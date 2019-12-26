@@ -7,7 +7,6 @@
 namespace TNW\QuickbooksBasic\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\UrlInterface;
 
 /**
  * Class Config
@@ -16,13 +15,22 @@ use Magento\Framework\UrlInterface;
  */
 class Config
 {
+    /**
+     * Consts Block
+     */
     const IN_SYNC = 'In Sync';
     const OUT_OF_SYNC = 'Out of Sync';
+    const AUTH_URL = 'https://appcenter.intuit.com/connect/oauth2';
+    const ACCESS_TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
+    const DISCONNECT_TOKEN_URL = 'https://developer.api.intuit.com/v2/oauth2/tokens/revoke';
+    const CALLBACK_ROUTE_PATH = 'quickbooks/callback';
 
     /** @var ScopeConfigInterface */
     protected $config;
 
-    /** @var UrlInterface */
+    /**
+     * @var \Magento\Framework\Url
+     */
     protected $urlBuilder;
 
     /** @var array */
@@ -38,26 +46,25 @@ class Config
     ];
 
     /** @var array  */
-    protected $quickbooksConsumerKeys = [
-        0 => 'qyprdifTfuliLIuzNMSDplyxNWqdaB',
-        1 => 'qyprdBr7giY6Bab1B0eorSQzf9aPOs'
+    protected $quickbooksClientId = [
+        0 => 'Q0pOMVz6YEAORni1VGs3vfR7Kn55WD5aRUHsWWOKn6q82WFUH3',
+        1 => 'ABNBe35SCjcVAGmTReHHMDSEtRwi5f5YRdmGPga6wOOh3iMojI'
     ];
 
     /** @var array  */
-    protected $quickbooksConsumerSecrets = [
-        0 => 'hTxmA3YWSjf3rUqHfidVaYVTkT4XKP27w8nfpQlk',
-        1 => '9mqSkQLJY4mPsZRM8n4uL9FfTn226Was2Rl1x5Zc'
+    protected $quickbooksClientSecret = [
+        0 => '5wd3iJmo6dMWbrhy3dZXSaZuOI1RdAxPkuHKGHRG',
+        1 => 'I2JnVPpGKVnU5BfOz8y1qr0yGAFXLRzP8DvAtkJm'
     ];
 
     /**
      * Config constructor.
-     *
      * @param ScopeConfigInterface $config
-     * @param UrlInterface $urlBuilder
+     * @param \Magento\Framework\Url $urlBuilder
      */
     public function __construct(
         ScopeConfigInterface $config,
-        UrlInterface $urlBuilder
+        \Magento\Framework\Url $urlBuilder
     ) {
         $this->config = $config;
         $this->urlBuilder = $urlBuilder;
@@ -73,18 +80,11 @@ class Config
         );
 
         return [
-            'requestTokenUrl' =>
-                'https://oauth.intuit.com/oauth/v1/get_request_token',
-            'accessTokenUrl' =>
-                'https://oauth.intuit.com/oauth/v1/get_access_token',
-            'userAuthorizationUrl' =>
-                'https://appcenter.intuit.com/Connect/Begin',
-            'consumerKey' =>
-                $this->getQuickbooksConsumerKeyByType($environmentType),
-            'consumerSecret' =>
-                $this->getQuickbooksConsumerSecretByType($environmentType),
-            'callbackUrl' =>
-                $this->urlBuilder->getUrl('quickbooks/callback')
+            'response_type' => 'code',
+            'client_id' =>  $this->getQuickbooksClientIdByType($environmentType),
+            'client_secret' => $this->getQuickbooksClientSecretByType($environmentType),
+            'redirect_uri' => $this->urlBuilder->getUrl(\TNW\QuickbooksBasic\Model\Config::CALLBACK_ROUTE_PATH),
+            'scope' => 'com.intuit.quickbooks.accounting openid email profile',
         ];
     }
 
@@ -142,32 +142,18 @@ class Config
      * @param $type int
      * @return string
      */
-    public function getQuickbooksConsumerKeyByType($type)
+    public function getQuickbooksClientIdByType($type)
     {
-        //use production Consumer Key as default
-        $result = $this->quickbooksConsumerKeys[0];
-
-        if (!empty($this->quickbooksConsumerKeys[$type])) {
-            $result = $this->quickbooksConsumerKeys[$type];
-        }
-
-        return $result;
+        return $this->config->getValue('quickbooks/general/client_id');
     }
 
     /**
      * @param $type int
      * @return string
      */
-    public function getQuickbooksConsumerSecretByType($type)
+    public function getQuickbooksClientSecretByType($type)
     {
-        //use production Consumer Secret as default
-        $result = $this->quickbooksConsumerSecrets[0];
-
-        if (!empty($this->quickbooksConsumerSecrets[$type])) {
-            $result = $this->quickbooksConsumerSecrets[$type];
-        }
-
-        return $result;
+        return $this->config->getValue('quickbooks/general/client_secret');
     }
 
     /**

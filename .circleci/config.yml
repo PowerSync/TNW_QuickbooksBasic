@@ -337,100 +337,100 @@ workflows:
           filters:
             branches:
               only: /.*/
-      - m224_php71:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
-      - m223_php71:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
-      - m222_php71:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
-      - m221_php71:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
-      - m225_php70:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
-      - m224_php70:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
-      - m223_php70:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
-      - m222_php70:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
-      - m221_php70:
-          context: powersync
-          filters:
-            branches:
-              only:
-                - develop
-                - master
-                - /^hotfix*/
-                - /^release*/
+#       - m224_php71:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
+#       - m223_php71:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
+#       - m222_php71:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
+#       - m221_php71:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
+#       - m225_php70:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
+#       - m224_php70:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
+#       - m223_php70:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
+#       - m222_php70:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
+#       - m221_php70:
+#           context: powersync
+#           filters:
+#             branches:
+#               only:
+#                 - develop
+#                 - master
+#                 - /^hotfix*/
+#                 - /^release*/
       - deploy:
           context: powersync
           requires:
             - m225_php71
-            - m224_php71
-            - m223_php71
-            - m222_php71
-            - m221_php71
-            - m225_php70
-            - m224_php70
-            - m223_php70
-            - m222_php70
-            - m221_php70
+#             - m224_php71
+#             - m223_php71
+#             - m222_php71
+#             - m221_php71
+#             - m225_php70
+#             - m224_php70
+#             - m223_php70
+#             - m222_php70
+#             - m221_php70
           filters:
             branches:
               only: master

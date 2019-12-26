@@ -39,26 +39,32 @@ class TokenData
     private $cacheTypeList;
 
     /**
+     * @var \OAuth\Common\Consumer\CredentialsFactory
+     */
+    private $credentialsFactory;
+
+    /**
+     * TokenData constructor.
      * @param ScopeConfigInterface $config
      * @param Factory $configFactory
      * @param ResourceConfig $resourceConfig
      * @param TypeListInterface $cacheTypeList
+     * @param \OAuth\Common\Consumer\CredentialsFactory $credentialsFactory
      */
     public function __construct(
         ScopeConfigInterface $config,
         Factory $configFactory,
         ResourceConfig $resourceConfig,
-        TypeListInterface $cacheTypeList
+        TypeListInterface $cacheTypeList,
+        \OAuth\Common\Consumer\CredentialsFactory $credentialsFactory
     ) {
+        $this->credentialsFactory = $credentialsFactory;
         $this->config = $config;
         $this->configFactory = $configFactory;
         $this->resourceConfig = $resourceConfig;
         $this->cacheTypeList = $cacheTypeList;
     }
 
-    /**
-     * @return \Zend_Oauth_Token_Access | null
-     */
     public function getAccessToken()
     {
         if ($this->isAccessTokenExpired()) {
@@ -67,8 +73,12 @@ class TokenData
         $serializedToken = $this->config->getValue(
             Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS
         );
-
-        return \unserialize($serializedToken);
+        $result = \unserialize($serializedToken);
+        if ($result instanceof \Zend_Oauth_Token_Access) {
+            $this->clearAccessToken();
+            $result = null;
+        }
+        return $result;
     }
 
     /**
@@ -124,11 +134,10 @@ class TokenData
     }
 
     /**
-     * @param \Zend_Oauth_Token_Access $token
+     * @param $token
      * @return $this
-     * @throws \Exception
      */
-    public function setAccessToken(\Zend_Oauth_Token_Access $token)
+    public function setAccessToken($token)
     {
         $serializedToken = \serialize($token);
         $this->resourceConfig->saveConfig(
@@ -148,10 +157,7 @@ class TokenData
     }
 
     /**
-     * Clear access token from database
-     *
      * @return $this
-     * @throws \Exception
      */
     public function clearAccessToken()
     {
@@ -172,28 +178,24 @@ class TokenData
     }
 
     /**
-     * @return \Zend_Oauth_Token_Request
+     * @return mixed
      */
-    public function getRequestToken()
+    public function getAuthTokenState()
     {
-        $serializedToken = $this->config->getValue(
-            Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_REQUEST
+        return $this->config->getValue(
+            Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_AUTH
         );
-
-        return \unserialize($serializedToken);
     }
 
     /**
-     * @param \Zend_Oauth_Token_Request $token
+     * @param $state
      * @return $this
-     * @throws \Exception
      */
-    public function setRequestToken(\Zend_Oauth_Token_Request $token = null)
+    public function setAuthTokenState($state)
     {
-        $serializedToken = \serialize($token);
         $this->resourceConfig->saveConfig(
-            Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_REQUEST,
-            $serializedToken,
+            Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_AUTH,
+            $state,
             ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
             0
         );
@@ -203,11 +205,11 @@ class TokenData
 
     /**
      * @param $config
-     * @return \Zend_Oauth_Consumer
+     * @return \OAuth\Common\Consumer\Credentials
      */
     public function getConsumer($config)
     {
-        return new \Zend_Oauth_Consumer($config);
+        return $this->credentialsFactory->create($config);
     }
 
     /**
