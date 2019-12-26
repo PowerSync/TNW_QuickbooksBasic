@@ -37,12 +37,22 @@
                 <group id="configuration_details" showInDefault="1" showInWebsite="0" showInStore="0" sortOrder="4">
                     <frontend_model>TNW\QuickbooksBasic\Block\Adminhtml\System\Config\Fieldset\Hint</frontend_model>
                 </group>
+                <field id="client_id" translate="label" type="obscure" sortOrder="18" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Client ID</label>
+                    <config_path>quickbooks/general/client_id</config_path>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="client_secret" translate="label" type="obscure" sortOrder="19" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Client Secret</label>
+                    <config_path>quickbooks/general/client_secret</config_path>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
                 <field id="type" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Type</label>
                     <source_model>TNW\QuickbooksBasic\Model\Config\Source\Environment</source_model>
                     <backend_model>TNW\QuickbooksBasic\Model\Config\Backend\Environment</backend_model>
                     <config_path>quickbooks/general/environment</config_path>
-                    <comment><![CDATA[Type of the QuickBooks account you are connecting to]]></comment>
+                    <comment model="TNW\QuickbooksBasic\Model\Config\Backend\CallBackComment"/>
                 </field>
                 <field id="test_buttons" sortOrder="100" showInDefault="1" showInWebsite="0" showInStore="0">
                     <frontend_model>TNW\QuickbooksBasic\Block\Adminhtml\System\Config\Buttons</frontend_model>

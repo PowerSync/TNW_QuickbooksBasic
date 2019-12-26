@@ -79,7 +79,7 @@ class QuickbooksSyncMessage
             $this->sectionIds
         )
         ) {
-            if (!($this->quickbooks->getAccessToken() instanceof \Zend_Oauth_Token_Access)) {
+            if (!($this->quickbooks->getAccessToken() instanceof \OAuth\OAuth2\Token\StdOAuth2Token)) {
                 if (!$this->registry->registry('quickbooks_empty_access_token')) {
                     $this->registry->register(
                         'quickbooks_empty_access_token',

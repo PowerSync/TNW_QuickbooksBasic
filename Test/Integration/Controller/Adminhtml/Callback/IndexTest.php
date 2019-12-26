@@ -145,27 +145,6 @@ class IndexTest extends AbstractBackendController
         $this->objectManager->addSharedInstance($tokenData, TokenData::class);
     }
 
-    private function placeRequestToken()
-    {
-        /** @var \Zend_Oauth_Token_Request $requestToken */
-        $requestToken = $this->getRequestToken();
-
-        /** @var string $serializedToken */
-        $serializedToken = \serialize($requestToken);
-
-        /** @var Factory $configFactory */
-        $configFactory = $this->getConfigFactory();
-
-        /** @var Config $coreConfig */
-        $coreConfig = $configFactory->create();
-        $coreConfig->setDataByPath(
-            QuickbooksModel::XML_PATH_QUICKBOOKS_DATA_TOKEN_REQUEST,
-            $serializedToken
-        );
-
-        $coreConfig->save();
-    }
-
     private function removeRequestToken()
     {
         /** @var Factory $configFactory */
@@ -174,59 +153,11 @@ class IndexTest extends AbstractBackendController
         /** @var Config $coreConfig */
         $coreConfig = $configFactory->create();
         $coreConfig->setDataByPath(
-            QuickbooksModel::XML_PATH_QUICKBOOKS_DATA_TOKEN_REQUEST,
+            QuickbooksModel::XML_PATH_QUICKBOOKS_DATA_TOKEN_AUTH,
             null
         );
 
         $coreConfig->save();
-    }
-
-    /**
-     * @param bool $throwException
-     *
-     * @return \PHPUnit_Framework_MockObject_MockObject
-     */
-    private function getConsumer($throwException = false)
-    {
-        /** @var \Zend_Oauth_Token_Access $accessToken */
-        $accessToken = $this->getAccessToken();
-
-        /** @var \Zend_Oauth_Token_Request $requestToken */
-        $requestToken = $this->getRequestToken();
-
-        $consumer = $this->getMockBuilder(\Zend_Oauth_Consumer::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        if ($throwException) {
-            $consumer->expects($this->once())
-                ->method('getAccessToken')
-                ->with(['param' => 'testParam'], $requestToken)
-                ->will($this->throwException(
-                    new \Exception(self::TEST_EXCEPTION)
-                ));
-        } else {
-            $consumer->expects($this->once())
-                ->method('getAccessToken')
-                ->with(['param' => 'testParam'], $requestToken)
-                ->willReturn($accessToken);
-        }
-
-        return $consumer;
-    }
-
-    /**
-     * @return \Zend_Oauth_Token_Request
-     */
-    private function getRequestToken()
-    {
-        /** @var \Zend_Oauth_Token_Request $requestToken */
-        $requestToken = $this->objectManager->create(
-            \Zend_Oauth_Token_Request::class
-        );
-        $requestToken->setToken(self::TEST_REQUEST_TOKEN);
-
-        return $requestToken;
     }
 
     /**
