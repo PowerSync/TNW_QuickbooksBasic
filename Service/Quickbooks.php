@@ -114,7 +114,6 @@ class Quickbooks
      * @param int $quickbooksId
      * @return string
      * @throws LocalizedException
-     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function read($apiRead, $quickbooksId = 0)
     {
@@ -142,20 +141,34 @@ class Quickbooks
             $token = $this->refreshToken($token);
         }
 
-        $response = $this->httpClientFactory->create()->retrieveResponse(
-            $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
-            null,
-            [
-                'Authorization' => 'Bearer ' . $token->getAccessToken(),
-                'Accept' => 'application/json'
-            ],
-            \Zend_Http_Client::GET
-        );
+        $requestHeaders = [
+            'Authorization' => 'Bearer ' . $token->getAccessToken(),
+            'Accept' => 'application/json'
+        ];
+        try {
+            $response = $this->httpClientFactory->create()->retrieveResponse(
+                $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
+                null,
+                $requestHeaders,
+                \Zend_Http_Client::GET
+            );
+            $status = 200;
+        } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
+            $status = $e->getCode();
+            $response = $e->getMessage();
+        }
+
+        $this->logger->debug('QUICKBOOKS REQUEST URL:' . $apiUrl . $requestUri);
+        $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($requestHeaders));
+        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $response);
 
         return $response;
-        //TODO: resolve  debug?
     }
 
+    /**
+     * @return mixed|null
+     */
     public function getAccessToken()
     {
         return $this->tokenData->getAccessToken();
@@ -177,7 +190,6 @@ class Quickbooks
      * @param $queryString
      * @return string
      * @throws LocalizedException
-     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function query($queryString)
     {
@@ -210,20 +222,32 @@ class Quickbooks
         }
 
         $queryString .= self::MAX_RESULTS_QUERY_LIMITATION_STRING;
+        $headers = [
+            'Authorization' => 'Bearer ' . $token->getAccessToken(),
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/text'
+        ];
 
-        $response = $this->httpClientFactory->create()->retrieveResponse(
-            $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
-            $queryString,
-            [
-                'Authorization' => 'Bearer ' . $token->getAccessToken(),
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/text'
-            ],
-            \Zend_Http_Client::POST
-        );
+        try {
+            $response = $this->httpClientFactory->create()->retrieveResponse(
+                $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
+                $queryString,
+                $headers,
+                \Zend_Http_Client::POST
+            );
+            $status = 200;
+        } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
+            $status = $e->getCode();
+            $response = $e->getMessage();
+        }
+
+        $this->logger->debug('QUICKBOOKS REQUEST URL:' . $apiUrl . $requestUri);
+        $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
+        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . $queryString);
+        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $response);
 
         return $response;
-        //TODO: resolve  debug?
     }
 
     /**
@@ -231,7 +255,6 @@ class Quickbooks
      * @param $uri
      * @return string
      * @throws LocalizedException
-     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function post($encodedData, $uri)
     {
@@ -274,17 +297,31 @@ class Quickbooks
             $url->addToQuery($uriComponents['query']['key'], $uriComponents['query']['value']);
         }
 
-        $response = $httpClient->retrieveResponse(
-            $url,
-            $encodedData,
-            [
-                'Authorization' => 'Bearer ' . $token->getAccessToken(),
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json'
-            ],
-            \Zend_Http_Client::POST
-        );
-        //TODO: resolve  debug?
+        $headers = [
+            'Authorization' => 'Bearer ' . $token->getAccessToken(),
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json'
+        ];
+
+        try {
+            $response = $httpClient->retrieveResponse(
+                $url,
+                $encodedData,
+                $headers,
+                \Zend_Http_Client::POST
+            );
+            $status = 200;
+        } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
+            $status = $e->getCode();
+            $response = $e->getMessage();
+        }
+
+        $this->logger->debug('QUICKBOOKS REQUEST URL:' . $url);
+        $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
+        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . $encodedData);
+        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $response);
+
         return $response;
     }
 
@@ -345,7 +382,6 @@ class Quickbooks
      * @return $this
      * @throws Exception\InvalidStateException
      * @throws Exception\TokenResponseException
-     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function grant(RequestInterface $request)
     {
@@ -361,11 +397,22 @@ class Quickbooks
             $this->quickbooksConfig->getConfig()
         );
 
-        $responseBody = $this->httpClientFactory->create()->retrieveResponse(
-            $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL),
-            $bodyParams,
-            []
-        );
+        try {
+            $responseBody = $this->httpClientFactory->create()->retrieveResponse(
+                $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL),
+                $bodyParams,
+                []
+            );
+            $status = 200;
+        } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
+            $status = $e->getCode();
+            $responseBody = $e->getMessage();
+        }
+
+        $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
+        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
+        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
 
         $this->tokenData->setAuthTokenState('');
         $this->setAccessToken($this->parseAccessTokenResponse($responseBody));
@@ -432,7 +479,6 @@ class Quickbooks
      * @param null $token
      * @return mixed
      * @throws Exception\TokenResponseException
-     * @throws \OAuth\Common\Http\Exception\TokenResponseException
      */
     public function refreshToken($token = null)
     {
@@ -453,11 +499,22 @@ class Quickbooks
             $this->quickbooksConfig->getConfig()
         );
 
-        $responseBody = $this->httpClientFactory->create()->retrieveResponse(
-            $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL),
-            $bodyParams,
-            []
-        );
+        try {
+            $responseBody = $this->httpClientFactory->create()->retrieveResponse(
+                $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL),
+                $bodyParams,
+                []
+            );
+            $status = 200;
+        } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
+            $status = $e->getCode();
+            $responseBody = $e->getMessage();
+        }
+
+        $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
+        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
+        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
 
         $accessToken = $this->parseAccessTokenResponse($responseBody);
         $this->setAccessToken($accessToken);
@@ -475,22 +532,26 @@ class Quickbooks
         if (!$token) {
             return [];
         }
+        $config = $this->quickbooksConfig->getConfig();
+        $body = json_encode(['token' => $token->getAccessToken()]);
+        $headers = [
+            'Authorization' => 'Basic ' . base64_encode($config['client_id'] . ":" . $config['client_secret']),
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json'
+        ];
         try {
-            $config = $this->quickbooksConfig->getConfig();
+
             $response = $this->httpClientFactory->create()->retrieveResponse(
                 $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL),
-                json_encode(['token' => $token->getAccessToken()]),
-                [
-                    'Authorization' => 'Basic ' . base64_encode($config['client_id'] . ":" . $config['client_secret']),
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json'
-                ],
+                $body,
+                $headers,
                 \Zend_Http_Client::POST
             );
             $result = [
                 'success' => 'true',
                 'message' => 'Disconnected Successfully!',
             ];
+            $status = 200;
         } catch (\Exception $e) {
             return ['error' => 'true', 'message' => $e->getMessage()];
         }
@@ -498,6 +559,9 @@ class Quickbooks
         $this->logger->debug(
             'QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL
         );
+        $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
+        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . $body);
+        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
         $this->logger->debug(
             'QUICKBOOKS RESPONSE BODY:' . $response
         );
