@@ -37,7 +37,10 @@ class CallBackComment implements CommentInterface
     {
         $comment = __(
             'Type of the QuickBooks account you are connecting to. <br> CallBack Url For QB app configuration: %1',
-            $this->urlBuilder->getUrl(\TNW\QuickbooksBasic\Model\Config::CALLBACK_ROUTE_PATH)
+            $this->urlBuilder->getUrl(
+                \TNW\QuickbooksBasic\Model\Config::CALLBACK_ROUTE_PATH,
+                ['_nosid' => true]
+            )
         );
         return $comment;
     }

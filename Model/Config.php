@@ -23,7 +23,7 @@ class Config
     const AUTH_URL = 'https://appcenter.intuit.com/connect/oauth2';
     const ACCESS_TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
     const DISCONNECT_TOKEN_URL = 'https://developer.api.intuit.com/v2/oauth2/tokens/revoke';
-    const CALLBACK_ROUTE_PATH = 'quickbooks/callback';
+    const CALLBACK_ROUTE_PATH = 'tnw-quickbooks/callback';
 
     /** @var ScopeConfigInterface */
     protected $config;
@@ -83,7 +83,10 @@ class Config
             'response_type' => 'code',
             'client_id' =>  $this->getQuickbooksClientIdByType($environmentType),
             'client_secret' => $this->getQuickbooksClientSecretByType($environmentType),
-            'redirect_uri' => $this->urlBuilder->getUrl(\TNW\QuickbooksBasic\Model\Config::CALLBACK_ROUTE_PATH),
+            'redirect_uri' => $this->urlBuilder->getUrl(
+                \TNW\QuickbooksBasic\Model\Config::CALLBACK_ROUTE_PATH,
+                ['_nosid' => true]
+            ),
             'scope' => 'com.intuit.quickbooks.accounting openid email profile',
         ];
     }
