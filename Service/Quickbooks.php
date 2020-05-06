@@ -681,8 +681,7 @@ class Quickbooks
      */
     protected function parseAccessTokenResponse($responseBody)
     {
-        $data = json_decode($responseBody, true);
-
+        $data = $this->jsonDecoder->decode($responseBody);
         if (null === $data || !is_array($data)) {
             throw new Exception\TokenResponseException(__('Unable to parse response.'));
         } elseif (isset($data['error_description']) || isset($data['error'])) {

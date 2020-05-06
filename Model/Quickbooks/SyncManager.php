@@ -208,11 +208,19 @@ class SyncManager
                 }
             }
 
-            if (isset($_result['result']['errors'])) {
+            if (isset($_result['result']['errors']) && !empty($_result['result']['errors'])) {
                 foreach ($_result['result']['errors'] as $error) {
+                    if (is_array($error['message'])) {
+                        $errorMessage = implode(', ', array_merge(
+                            array_column($error['message'], 'Message'),
+                            array_column($error['message'], 'Detail')
+                        ));
+                    } else {
+                        $errorMessage = $error['message'];
+                    }
                     $this->messageManager->addWarningMessage(__(
                         'Magento type %2: %1',
-                        $error['message'],
+                        $errorMessage,
                         $this->getTypeOfTheObject($error['object'])
                     ));
                 }
