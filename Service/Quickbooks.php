@@ -26,6 +26,10 @@ use TNW\QuickbooksBasic\TokenData;
 class Quickbooks
 {
     /**
+     * Invalid Grant Token Error Response
+     */
+    const INVALID_GRANT_ERROR = 'invalid_grant';
+    /**
      *
      */
     const MAX_RESULTS_QUERY_LIMITATION_STRING = ' MAXRESULTS 1000';
@@ -152,6 +156,22 @@ class Quickbooks
                 $requestHeaders,
                 \Zend_Http_Client::GET
             );
+
+            if (isset($this->jsonDecoder->decode($response)['error'])
+                && $this->jsonDecoder->decode($response)['error'] === self::INVALID_GRANT_ERROR
+            ) {
+                $token = $this->refreshToken($token);
+                $requestHeaders = [
+                    'Authorization' => 'Bearer ' . $token->getAccessToken(),
+                    'Accept' => 'application/json'
+                ];
+                $response = $this->httpClientFactory->create()->retrieveResponse(
+                    $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
+                    null,
+                    $requestHeaders,
+                    \Zend_Http_Client::GET
+                );
+            }
             $status = 200;
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
@@ -235,6 +255,23 @@ class Quickbooks
                 $headers,
                 \Zend_Http_Client::POST
             );
+
+            if (isset($this->jsonDecoder->decode($response)['error'])
+                && $this->jsonDecoder->decode($response)['error'] === self::INVALID_GRANT_ERROR
+            ) {
+                $token = $this->refreshToken($token);
+                $headers = [
+                    'Authorization' => 'Bearer ' . $token->getAccessToken(),
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/text'
+                ];
+                $response = $this->httpClientFactory->create()->retrieveResponse(
+                    $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
+                    $queryString,
+                    $headers,
+                    \Zend_Http_Client::POST
+                );
+            }
             $status = 200;
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
@@ -310,6 +347,23 @@ class Quickbooks
                 $headers,
                 \Zend_Http_Client::POST
             );
+
+            if (isset($this->jsonDecoder->decode($response)['error'])
+                && $this->jsonDecoder->decode($response)['error'] === self::INVALID_GRANT_ERROR
+            ) {
+                $token = $this->refreshToken($token);
+                $headers = [
+                    'Authorization' => 'Bearer ' . $token->getAccessToken(),
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json'
+                ];
+                $response = $httpClient->retrieveResponse(
+                    $url,
+                    $encodedData,
+                    $headers,
+                    \Zend_Http_Client::POST
+                );
+            }
             $status = 200;
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
@@ -547,6 +601,19 @@ class Quickbooks
                 $headers,
                 \Zend_Http_Client::POST
             );
+
+            if (isset($this->jsonDecoder->decode($response)['error'])
+                && $this->jsonDecoder->decode($response)['error'] === self::INVALID_GRANT_ERROR
+            ) {
+                $token = $this->refreshToken($token);
+                $body = json_encode(['token' => $token->getAccessToken()]);
+                $response = $this->httpClientFactory->create()->retrieveResponse(
+                    $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL),
+                    $body,
+                    $headers,
+                    \Zend_Http_Client::POST
+                );
+            }
             $result = [
                 'success' => 'true',
                 'message' => 'Disconnected Successfully!',
