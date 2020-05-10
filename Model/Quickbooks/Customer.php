@@ -268,29 +268,33 @@ class Customer extends Quickbooks implements EntityInterface
             $customerList['QueryResponse']['Customer'] = $customerList['QueryResponse']['Customer'][0];
         }
 
-        if (empty($customerList['QueryResponse']['Customer']['ParentRef'])) {
-            $response = $this->query(sprintf(
-                "SELECT * FROM Customer WHERE DisplayName = '%s'",
-                addslashes(sprintf('%s (company)', $company))
-            ));
-        } else {
+        if (!empty($customerList['QueryResponse']['Customer']['ParentRef'])) {
             $response = $this->query(sprintf(
                 "SELECT * FROM Customer WHERE Id = '%d'",
                 $customerList['QueryResponse']['Customer']['ParentRef']
             ));
         }
 
-        /** @var array $customerList */
-        $customerList = $this->getQuickbooksService()->checkResponse($response);
+        $companyResponse = $this->query(sprintf(
+            "SELECT * FROM Customer WHERE DisplayName = '%s'",
+            addslashes(sprintf('%s (company)', $company))
+        ));
+        /** @var array $companyList */
+        $companyList = $this->getQuickbooksService()->checkResponse($companyResponse);
 
-        if (isset($customerList['QueryResponse']['Customer'])) {
-            $customer = $customerList['QueryResponse']['Customer'];
+        if (isset($companyList['QueryResponse']['Customer'][0])) {
+            $customer = $companyList['QueryResponse']['Customer'][0];
+        } else {
+            /** @var array $customerList */
+            $customerList = $this->getQuickbooksService()->checkResponse($response);
+            if (isset($customerList['QueryResponse']['Customer'])) {
+                $customer = $customerList['QueryResponse']['Customer'];
+            }
+
+            if (isset($customerList['QueryResponse']['Customer'][0]['Id'])) {
+                $customer = $customerList['QueryResponse']['Customer'][0];
+            }
         }
-
-        if (isset($customerList['QueryResponse']['Customer'][0]['Id'])) {
-            $customer = $customerList['QueryResponse']['Customer'][0];
-        }
-
         return $customer;
     }
 

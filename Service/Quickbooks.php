@@ -152,7 +152,6 @@ class Quickbooks
                 $requestHeaders,
                 \Zend_Http_Client::GET
             );
-
             $status = 200;
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
@@ -311,7 +310,6 @@ class Quickbooks
                 $headers,
                 \Zend_Http_Client::POST
             );
-
             $status = 200;
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
@@ -553,14 +551,12 @@ class Quickbooks
             'Content-Type' => 'application/json'
         ];
         try {
-
             $response = $this->httpClientFactory->create()->retrieveResponse(
                 $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL),
                 $body,
                 $headers,
                 \Zend_Http_Client::POST
             );
-
             $result = [
                 'success' => 'true',
                 'message' => 'Disconnected Successfully!',
@@ -692,6 +688,7 @@ class Quickbooks
      * @param $responseBody
      * @return mixed
      * @throws Exception\TokenResponseException
+     * @throws Exception\InvalidGrantException
      */
     protected function parseAccessTokenResponse($responseBody)
     {
