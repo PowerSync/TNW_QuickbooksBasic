@@ -157,21 +157,6 @@ class Quickbooks
                 \Zend_Http_Client::GET
             );
 
-            if (isset($this->jsonDecoder->decode($response)['error'])
-                && $this->jsonDecoder->decode($response)['error'] === self::INVALID_GRANT_ERROR
-            ) {
-                $token = $this->refreshToken($token);
-                $requestHeaders = [
-                    'Authorization' => 'Bearer ' . $token->getAccessToken(),
-                    'Accept' => 'application/json'
-                ];
-                $response = $this->httpClientFactory->create()->retrieveResponse(
-                    $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
-                    null,
-                    $requestHeaders,
-                    \Zend_Http_Client::GET
-                );
-            }
             $status = 200;
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
@@ -255,23 +240,6 @@ class Quickbooks
                 $headers,
                 \Zend_Http_Client::POST
             );
-
-            if (isset($this->jsonDecoder->decode($response)['error'])
-                && $this->jsonDecoder->decode($response)['error'] === self::INVALID_GRANT_ERROR
-            ) {
-                $token = $this->refreshToken($token);
-                $headers = [
-                    'Authorization' => 'Bearer ' . $token->getAccessToken(),
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/text'
-                ];
-                $response = $this->httpClientFactory->create()->retrieveResponse(
-                    $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
-                    $queryString,
-                    $headers,
-                    \Zend_Http_Client::POST
-                );
-            }
             $status = 200;
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
@@ -348,22 +316,6 @@ class Quickbooks
                 \Zend_Http_Client::POST
             );
 
-            if (isset($this->jsonDecoder->decode($response)['error'])
-                && $this->jsonDecoder->decode($response)['error'] === self::INVALID_GRANT_ERROR
-            ) {
-                $token = $this->refreshToken($token);
-                $headers = [
-                    'Authorization' => 'Bearer ' . $token->getAccessToken(),
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json'
-                ];
-                $response = $httpClient->retrieveResponse(
-                    $url,
-                    $encodedData,
-                    $headers,
-                    \Zend_Http_Client::POST
-                );
-            }
             $status = 200;
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
@@ -536,41 +488,52 @@ class Quickbooks
      */
     public function refreshToken($token = null)
     {
-        if ($token === null) {
-            $token = $this->getAccessToken();
-        }
-        $refreshToken = $token->getRefreshToken();
+        $invalidGrantError = true;
+        do {
+            if ($token === null) {
+                $token = $this->getAccessToken();
+            }
+            $refreshToken = $token->getRefreshToken();
 
-        if (empty($refreshToken)) {
-            throw new \Exception(__('Missing Refresh Token'));
-        }
+            if (empty($refreshToken)) {
+                throw new \Exception(__('Missing Refresh Token'));
+            }
 
-        $bodyParams = array_merge(
-            [
-                'refresh_token' => $refreshToken,
-                'grant_type' => 'refresh_token',
-            ],
-            $this->quickbooksConfig->getConfig()
-        );
-
-        try {
-            $responseBody = $this->httpClientFactory->create()->retrieveResponse(
-                $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL),
-                $bodyParams,
-                []
+            $bodyParams = array_merge(
+                [
+                    'refresh_token' => $refreshToken,
+                    'grant_type' => 'refresh_token',
+                ],
+                $this->quickbooksConfig->getConfig()
             );
-            $status = 200;
-        } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
-            $status = $e->getCode();
-            $responseBody = $e->getMessage();
-        }
 
-        $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
-        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
-        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
-        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+            try {
+                $responseBody = $this->httpClientFactory->create()->retrieveResponse(
+                    $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL),
+                    $bodyParams,
+                    []
+                );
+                $status = 200;
+            } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
+                $status = $e->getCode();
+                $responseBody = $e->getMessage();
+            }
 
-        $accessToken = $this->parseAccessTokenResponse($responseBody);
+            $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
+            $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
+            $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+            $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+
+            try {
+                $accessToken = $this->parseAccessTokenResponse($responseBody);
+                $invalidGrantError = false;
+            } catch (Exception\TokenResponseException $e) {
+                throw $e;
+            } catch (Exception\InvalidGrantException $e) {
+                $invalidGrantError = true;
+            }
+        } while ($invalidGrantError);
+
         $this->setAccessToken($accessToken);
         return $accessToken;
     }
@@ -602,18 +565,6 @@ class Quickbooks
                 \Zend_Http_Client::POST
             );
 
-            if (isset($this->jsonDecoder->decode($response)['error'])
-                && $this->jsonDecoder->decode($response)['error'] === self::INVALID_GRANT_ERROR
-            ) {
-                $token = $this->refreshToken($token);
-                $body = json_encode(['token' => $token->getAccessToken()]);
-                $response = $this->httpClientFactory->create()->retrieveResponse(
-                    $this->urlFactory->createFromAbsolute(\TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL),
-                    $body,
-                    $headers,
-                    \Zend_Http_Client::POST
-                );
-            }
             $result = [
                 'success' => 'true',
                 'message' => 'Disconnected Successfully!',
@@ -751,13 +702,16 @@ class Quickbooks
         $data = $this->jsonDecoder->decode($responseBody);
         if (null === $data || !is_array($data)) {
             throw new Exception\TokenResponseException(__('Unable to parse response.'));
-        } elseif (isset($data['error_description']) || isset($data['error'])) {
+        } elseif (isset($data['error_description'])
+            || (isset($data['error']) && $data['error'] !== Exception\InvalidGrantException::INVALID_GRANT)) {
             throw new Exception\TokenResponseException(
                 __(
                     'Error in retrieving token: "%1"',
                     isset($data['error_description']) ? $data['error_description'] : $data['error']
                 )
             );
+        } elseif(isset($data['error']) && $data['error'] === Exception\InvalidGrantException::INVALID_GRANT) {
+            throw new Exception\InvalidGrantException(__('Invalid Grant Error.'));
         }
 
         $token = $this->auth2TokenFactory->create();
