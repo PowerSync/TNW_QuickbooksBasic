@@ -26,10 +26,6 @@ use TNW\QuickbooksBasic\TokenData;
 class Quickbooks
 {
     /**
-     * Invalid Grant Token Error Response
-     */
-    const INVALID_GRANT_ERROR = 'invalid_grant';
-    /**
      *
      */
     const MAX_RESULTS_QUERY_LIMITATION_STRING = ' MAXRESULTS 1000';
