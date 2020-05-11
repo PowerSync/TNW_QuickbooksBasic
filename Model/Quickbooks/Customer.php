@@ -254,6 +254,19 @@ class Customer extends Quickbooks implements EntityInterface
      */
     protected function lookupQuickbooksParentByCompanyOrEmail($company, $email)
     {
+        if (!empty($company)) {
+            /** @var \Zend_Http_Response $response */
+            $companyResponse = $this->query(sprintf(
+                "SELECT * FROM Customer WHERE DisplayName = '%s'",
+                addslashes(sprintf('%s (company)', $company))
+            ));
+            /** @var array $companyList */
+            $companyList = $this->getQuickbooksService()->checkResponse($companyResponse);
+            if (isset($companyList['QueryResponse']['Customer'][0]['Id'])) {
+                return $companyList['QueryResponse']['Customer'][0];
+            }
+        }
+
         $customer = [];
         /** @var \Zend_Http_Response $response */
         $response = $this->query(sprintf(
@@ -274,27 +287,15 @@ class Customer extends Quickbooks implements EntityInterface
                 $customerList['QueryResponse']['Customer']['ParentRef']
             ));
         }
-
-        $companyResponse = $this->query(sprintf(
-            "SELECT * FROM Customer WHERE DisplayName = '%s'",
-            addslashes(sprintf('%s (company)', $company))
-        ));
-        /** @var array $companyList */
-        $companyList = $this->getQuickbooksService()->checkResponse($companyResponse);
-
-        if (isset($companyList['QueryResponse']['Customer'][0])) {
-            $customer = $companyList['QueryResponse']['Customer'][0];
-        } else {
-            /** @var array $customerList */
-            $customerList = $this->getQuickbooksService()->checkResponse($response);
-            if (isset($customerList['QueryResponse']['Customer'])) {
-                $customer = $customerList['QueryResponse']['Customer'];
-            }
-
-            if (isset($customerList['QueryResponse']['Customer'][0]['Id'])) {
-                $customer = $customerList['QueryResponse']['Customer'][0];
-            }
+        /** @var array $customerList */
+        $customerList = $this->getQuickbooksService()->checkResponse($response);
+        if (isset($customerList['QueryResponse']['Customer'])) {
+            $customer = $customerList['QueryResponse']['Customer'];
         }
+        if (isset($customerList['QueryResponse']['Customer'][0]['Id'])) {
+            $customer = $customerList['QueryResponse']['Customer'][0];
+        }
+
         return $customer;
     }
 

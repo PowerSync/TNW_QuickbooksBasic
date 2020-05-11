@@ -482,6 +482,7 @@ class Quickbooks
      */
     public function refreshToken($token = null)
     {
+        $i=0;
         $invalidGrantError = true;
         do {
             if ($token === null) {
@@ -519,17 +520,18 @@ class Quickbooks
             $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
 
             try {
-                $accessToken = $this->parseAccessTokenResponse($responseBody);
+                $token = $this->parseAccessTokenResponse($responseBody);
+                $this->setAccessToken($token);
                 $invalidGrantError = false;
             } catch (Exception\TokenResponseException $e) {
                 throw $e;
             } catch (Exception\InvalidGrantException $e) {
                 $invalidGrantError = true;
             }
-        } while ($invalidGrantError);
+            $i++;
+        } while ($invalidGrantError && $i <= 1);
 
-        $this->setAccessToken($accessToken);
-        return $accessToken;
+        return $token;
     }
 
     /**
