@@ -23,6 +23,8 @@ use TNW\QuickbooksBasic\Model\Config as QuickbooksConfig;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 use TNW\QuickbooksBasic\Model\ResourceModel\Customer as CustomerResource;
 use TNW\QuickbooksBasic\Service\Quickbooks as QuickbooksService;
+use Magento\Customer\Model\CustomerFactory;
+use \Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Customer
@@ -80,21 +82,32 @@ class Customer extends Quickbooks implements EntityInterface
 
     /** @var  array */
     private $parentQuickbooksIdForContact = [];
+    /**
+     * @var CustomerFactory
+     */
+    protected $customerFactory;
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $manager;
 
     /**
-     * @param Factory                 $configFactory
-     * @param ScopeConfigInterface    $config
-     * @param UrlInterface            $urlBuilder
-     * @param EncoderInterface        $jsonEncoder
-     * @param DecoderInterface        $jsonDecoder
-     * @param LoggerInterface         $logger
-     * @param QuickbooksConfig        $quickbooksConfig
-     * @param QuickbooksService       $quickbooksService
-     * @param CustomerResource        $customerResource
-     * @param AddressFactory          $addressFactory
-     * @param ResourceConnection      $resourceConnection
+     * Customer constructor.
+     * @param Factory $configFactory
+     * @param ScopeConfigInterface $config
+     * @param UrlInterface $urlBuilder
+     * @param EncoderInterface $jsonEncoder
+     * @param DecoderInterface $jsonDecoder
+     * @param LoggerInterface $logger
+     * @param QuickbooksConfig $quickbooksConfig
+     * @param QuickbooksService $quickbooksService
+     * @param CustomerResource $customerResource
+     * @param AddressFactory $addressFactory
+     * @param ResourceConnection $resourceConnection
      * @param AddressExtensionFactory $extensionFactory
-     * @param ManagerInterface        $messageManager
+     * @param ManagerInterface $messageManager
+     * @param CustomerFactory $customerFactory
+     * @param StoreManagerInterface $manager
      */
     public function __construct(
         Factory $configFactory,
@@ -109,13 +122,17 @@ class Customer extends Quickbooks implements EntityInterface
         AddressFactory $addressFactory,
         ResourceConnection $resourceConnection,
         AddressExtensionFactory $extensionFactory,
-        ManagerInterface $messageManager
+        ManagerInterface $messageManager,
+        CustomerFactory $customerFactory,
+        StoreManagerInterface $manager
     ) {
         $this->customerResource = $customerResource;
         $this->addressFactory = $addressFactory;
         $this->resourceConnection = $resourceConnection;
         $this->addressExtensionFactory = $extensionFactory;
         $this->messageManager = $messageManager;
+        $this->customerFactory = $customerFactory;
+        $this->manager = $manager;
         parent::__construct(
             $configFactory,
             $config,
@@ -193,28 +210,33 @@ class Customer extends Quickbooks implements EntityInterface
      */
     public function prepareAccountData(CustomerInterface $customer)
     {
+        /** @var string $companyName */
+        $companyName = '';
         //prepare base customer data
         /** @var array $data */
         $data = [];
-
-        /** @var string $companyName */
-        $companyName = '';
-        foreach ($customer->getAddresses() as $address) {
-            if ($address->isDefaultBilling()) {
-                $companyName = $address->getCompany();
+        try {
+            /** @var \Magento\Customer\Model\Customer $customerFactory */
+            $customerFactory = $this->customerFactory->create();
+            $customerFactory->setStoreId($this->manager->getStore()->getStoreId());
+            $customerModel = $customerFactory->load($customer->getId());
+            $billindAddress = $customerModel->getDefaultBillingAddress();
+            if (($billindAddress)) {
+                $companyName = ($billindAddress->getCompany() !== null) ? $billindAddress->getCompany() : '';
             }
-
-            if (empty($companyName) && $address->isDefaultShipping()) {
-                $companyName = $address->getCompany();
+            if (empty($companyName)) {
+                $shippingAddress = $customerModel->getDefaultShippingAddress();
+                if ($shippingAddress) {
+                    $companyName = ($shippingAddress->getCompany() !== null) ? $shippingAddress->getCompany() : '';
+                }
             }
+        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $this->logger->debug(__('QUICKBOOKS Could not get customer by id.'));
         }
-
         if (empty($companyName)) {
             return [];
         }
-
         $companyName = $this->correctCompanyName($companyName);
-
         $parent = $this->lookupQuickbooksParentByCompanyOrEmail($companyName, $customer->getEmail());
         if (isset($parent['Id'])) {
             $data['Id'] = $parent['Id'];
@@ -225,7 +247,6 @@ class Customer extends Quickbooks implements EntityInterface
         } else {
             $data['CompanyName'] = $companyName;
             $data['DisplayName'] = sprintf('%s (company)', $companyName);
-
             $uri = self::API_CREATE;
         }
 
@@ -254,6 +275,19 @@ class Customer extends Quickbooks implements EntityInterface
      */
     protected function lookupQuickbooksParentByCompanyOrEmail($company, $email)
     {
+        if (!empty($company)) {
+            /** @var \Zend_Http_Response $response */
+            $companyResponse = $this->query(sprintf(
+                "SELECT * FROM Customer WHERE DisplayName = '%s'",
+                addslashes(sprintf('%s (company)', $company))
+            ));
+            /** @var array $companyList */
+            $companyList = $this->getQuickbooksService()->checkResponse($companyResponse);
+            if (isset($companyList['QueryResponse']['Customer'][0]['Id'])) {
+                return $companyList['QueryResponse']['Customer'][0];
+            }
+        }
+
         $customer = [];
         /** @var \Zend_Http_Response $response */
         $response = $this->query(sprintf(
@@ -268,25 +302,17 @@ class Customer extends Quickbooks implements EntityInterface
             $customerList['QueryResponse']['Customer'] = $customerList['QueryResponse']['Customer'][0];
         }
 
-        if (empty($customerList['QueryResponse']['Customer']['ParentRef'])) {
-            $response = $this->query(sprintf(
-                "SELECT * FROM Customer WHERE DisplayName = '%s'",
-                addslashes(sprintf('%s (company)', $company))
-            ));
-        } else {
+        if (!empty($customerList['QueryResponse']['Customer']['ParentRef'])) {
             $response = $this->query(sprintf(
                 "SELECT * FROM Customer WHERE Id = '%d'",
                 $customerList['QueryResponse']['Customer']['ParentRef']
             ));
         }
-
         /** @var array $customerList */
         $customerList = $this->getQuickbooksService()->checkResponse($response);
-
         if (isset($customerList['QueryResponse']['Customer'])) {
             $customer = $customerList['QueryResponse']['Customer'];
         }
-
         if (isset($customerList['QueryResponse']['Customer'][0]['Id'])) {
             $customer = $customerList['QueryResponse']['Customer'][0];
         }
