@@ -223,11 +223,11 @@ class Customer extends Quickbooks implements EntityInterface
             $billindAddress = $customerModel->getDefaultBillingAddress();
             if (($billindAddress)) {
                 $companyName = ($billindAddress->getCompany() !== null) ? $billindAddress->getCompany() : '';
-                if (empty($companyName)) {
-                    $shippingAddress = $customerModel->getDefaultShippingAddress();
-                    if ($shippingAddress) {
-                        $companyName = ($shippingAddress->getCompany() !== null) ? $shippingAddress->getCompany() : '';
-                    }
+            }
+            if (empty($companyName)) {
+                $shippingAddress = $customerModel->getDefaultShippingAddress();
+                if ($shippingAddress) {
+                    $companyName = ($shippingAddress->getCompany() !== null) ? $shippingAddress->getCompany() : '';
                 }
             }
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
