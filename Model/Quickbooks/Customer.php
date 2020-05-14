@@ -23,8 +23,6 @@ use TNW\QuickbooksBasic\Model\Config as QuickbooksConfig;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 use TNW\QuickbooksBasic\Model\ResourceModel\Customer as CustomerResource;
 use TNW\QuickbooksBasic\Service\Quickbooks as QuickbooksService;
-use Magento\Customer\Model\CustomerFactory;
-use \Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Customer
@@ -82,14 +80,6 @@ class Customer extends Quickbooks implements EntityInterface
 
     /** @var  array */
     private $parentQuickbooksIdForContact = [];
-    /**
-     * @var CustomerFactory
-     */
-    protected $customerFactory;
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $manager;
 
     /**
      * Customer constructor.
@@ -106,8 +96,6 @@ class Customer extends Quickbooks implements EntityInterface
      * @param ResourceConnection $resourceConnection
      * @param AddressExtensionFactory $extensionFactory
      * @param ManagerInterface $messageManager
-     * @param CustomerFactory $customerFactory
-     * @param StoreManagerInterface $manager
      */
     public function __construct(
         Factory $configFactory,
@@ -122,17 +110,13 @@ class Customer extends Quickbooks implements EntityInterface
         AddressFactory $addressFactory,
         ResourceConnection $resourceConnection,
         AddressExtensionFactory $extensionFactory,
-        ManagerInterface $messageManager,
-        CustomerFactory $customerFactory,
-        StoreManagerInterface $manager
+        ManagerInterface $messageManager
     ) {
         $this->customerResource = $customerResource;
         $this->addressFactory = $addressFactory;
         $this->resourceConnection = $resourceConnection;
         $this->addressExtensionFactory = $extensionFactory;
         $this->messageManager = $messageManager;
-        $this->customerFactory = $customerFactory;
-        $this->manager = $manager;
         parent::__construct(
             $configFactory,
             $config,
@@ -210,35 +194,36 @@ class Customer extends Quickbooks implements EntityInterface
      */
     public function prepareAccountData(CustomerInterface $customer)
     {
-        /** @var string $companyName */
-        $companyName = '';
         //prepare base customer data
         /** @var array $data */
         $data = [];
-        try {
-            /** @var \Magento\Customer\Model\Customer $customerFactory */
-            $customerFactory = $this->customerFactory->create();
-            $customerFactory->setStoreId($this->manager->getStore()->getStoreId());
-            $customerModel = $customerFactory->load($customer->getId());
-            $billindAddress = $customerModel->getDefaultBillingAddress();
-            if (($billindAddress)) {
-                $companyName = ($billindAddress->getCompany() !== null) ? $billindAddress->getCompany() : '';
-            }
-            if (empty($companyName)) {
-                $shippingAddress = $customerModel->getDefaultShippingAddress();
-                if ($shippingAddress) {
-                    $companyName = ($shippingAddress->getCompany() !== null) ? $shippingAddress->getCompany() : '';
+
+        /** @var string $companyName */
+        $companyName = '';
+        /** @var \Magento\Sales\Model\Order\Address $address */
+        foreach ($customer->getAddresses() as $address) {
+
+            if (method_exists($address, 'isDefaultBilling')) {
+                if ($address->isDefaultBilling()) {
+                    $companyName = $address->getCompany();
                 }
+            } elseif ($address->getIsDefaultBilling()) {
+                $companyName = $address->getCompany();
             }
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
-            $this->logger->debug(__('QUICKBOOKS Could not get customer by id.'));
+
+            if (empty($companyName) && $address->isDefaultShipping()) {
+                $companyName = $address->getCompany();
+            }
         }
+
         if (empty($companyName)) {
             return [];
         }
+
         $companyName = $this->correctCompanyName($companyName);
+
         $parent = $this->lookupQuickbooksParentByCompanyOrEmail($companyName, $customer->getEmail());
-        if (isset($parent['Id'])) {
+        if (isset($parent['Id']) && isset($parent['SyncToken'])) {
             $data['Id'] = $parent['Id'];
             $data['sparse'] = true;
             $data['SyncToken'] = $parent['SyncToken'];
@@ -247,6 +232,7 @@ class Customer extends Quickbooks implements EntityInterface
         } else {
             $data['CompanyName'] = $companyName;
             $data['DisplayName'] = sprintf('%s (company)', $companyName);
+
             $uri = self::API_CREATE;
         }
 
