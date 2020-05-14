@@ -82,19 +82,20 @@ class Customer extends Quickbooks implements EntityInterface
     private $parentQuickbooksIdForContact = [];
 
     /**
-     * @param Factory                 $configFactory
-     * @param ScopeConfigInterface    $config
-     * @param UrlInterface            $urlBuilder
-     * @param EncoderInterface        $jsonEncoder
-     * @param DecoderInterface        $jsonDecoder
-     * @param LoggerInterface         $logger
-     * @param QuickbooksConfig        $quickbooksConfig
-     * @param QuickbooksService       $quickbooksService
-     * @param CustomerResource        $customerResource
-     * @param AddressFactory          $addressFactory
-     * @param ResourceConnection      $resourceConnection
+     * Customer constructor.
+     * @param Factory $configFactory
+     * @param ScopeConfigInterface $config
+     * @param UrlInterface $urlBuilder
+     * @param EncoderInterface $jsonEncoder
+     * @param DecoderInterface $jsonDecoder
+     * @param LoggerInterface $logger
+     * @param QuickbooksConfig $quickbooksConfig
+     * @param QuickbooksService $quickbooksService
+     * @param CustomerResource $customerResource
+     * @param AddressFactory $addressFactory
+     * @param ResourceConnection $resourceConnection
      * @param AddressExtensionFactory $extensionFactory
-     * @param ManagerInterface        $messageManager
+     * @param ManagerInterface $messageManager
      */
     public function __construct(
         Factory $configFactory,
@@ -199,8 +200,14 @@ class Customer extends Quickbooks implements EntityInterface
 
         /** @var string $companyName */
         $companyName = '';
+        /** @var \Magento\Sales\Model\Order\Address $address */
         foreach ($customer->getAddresses() as $address) {
-            if ($address->isDefaultBilling()) {
+
+            if (method_exists($address, 'isDefaultBilling')) {
+                if ($address->isDefaultBilling()) {
+                    $companyName = $address->getCompany();
+                }
+            } elseif ($address->getIsDefaultBilling()) {
                 $companyName = $address->getCompany();
             }
 
@@ -216,7 +223,7 @@ class Customer extends Quickbooks implements EntityInterface
         $companyName = $this->correctCompanyName($companyName);
 
         $parent = $this->lookupQuickbooksParentByCompanyOrEmail($companyName, $customer->getEmail());
-        if (isset($parent['Id'])) {
+        if (isset($parent['Id']) && isset($parent['SyncToken'])) {
             $data['Id'] = $parent['Id'];
             $data['sparse'] = true;
             $data['SyncToken'] = $parent['SyncToken'];
@@ -254,6 +261,19 @@ class Customer extends Quickbooks implements EntityInterface
      */
     protected function lookupQuickbooksParentByCompanyOrEmail($company, $email)
     {
+        if (!empty($company)) {
+            /** @var \Zend_Http_Response $response */
+            $companyResponse = $this->query(sprintf(
+                "SELECT * FROM Customer WHERE DisplayName = '%s'",
+                addslashes(sprintf('%s (company)', $company))
+            ));
+            /** @var array $companyList */
+            $companyList = $this->getQuickbooksService()->checkResponse($companyResponse);
+            if (isset($companyList['QueryResponse']['Customer'][0]['Id'])) {
+                return $companyList['QueryResponse']['Customer'][0];
+            }
+        }
+
         $customer = [];
         /** @var \Zend_Http_Response $response */
         $response = $this->query(sprintf(
@@ -268,25 +288,17 @@ class Customer extends Quickbooks implements EntityInterface
             $customerList['QueryResponse']['Customer'] = $customerList['QueryResponse']['Customer'][0];
         }
 
-        if (empty($customerList['QueryResponse']['Customer']['ParentRef'])) {
-            $response = $this->query(sprintf(
-                "SELECT * FROM Customer WHERE DisplayName = '%s'",
-                addslashes(sprintf('%s (company)', $company))
-            ));
-        } else {
+        if (!empty($customerList['QueryResponse']['Customer']['ParentRef'])) {
             $response = $this->query(sprintf(
                 "SELECT * FROM Customer WHERE Id = '%d'",
                 $customerList['QueryResponse']['Customer']['ParentRef']
             ));
         }
-
         /** @var array $customerList */
         $customerList = $this->getQuickbooksService()->checkResponse($response);
-
         if (isset($customerList['QueryResponse']['Customer'])) {
             $customer = $customerList['QueryResponse']['Customer'];
         }
-
         if (isset($customerList['QueryResponse']['Customer'][0]['Id'])) {
             $customer = $customerList['QueryResponse']['Customer'][0];
         }
