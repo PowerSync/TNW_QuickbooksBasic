@@ -85,7 +85,7 @@ class IndexTest extends AbstractBackendController
             QuickbooksModel::XML_PATH_QUICKBOOKS_DATE_LAST_TIME_GET_DATA_TOKEN_ACCESS
         );
 
-        $this->assertSame(\serialize($this->getAccessToken()), $accessToken);
+        $this->assertSame(\Zend_Json::encode($this->getAccessToken()), $accessToken);
         $this->assertSame(date('Y-m-d'), $date);
     }
 

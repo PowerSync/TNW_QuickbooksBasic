@@ -34,7 +34,7 @@ class TokenDataTest extends \PHPUnit_Framework_TestCase
     public function testGetAccessToken()
     {
         $data = new \Zend_Oauth_Token_Access();
-        $data = serialize($data);
+        $data = \Zend_Json::encode($data);
 
         $this->tokenData->expects($this->once())
             ->method('isAccessTokenExpired')
@@ -60,7 +60,7 @@ class TokenDataTest extends \PHPUnit_Framework_TestCase
     public function testSetAccessToken()
     {
         $token = new \Zend_Oauth_Token_Access();
-        $serializedToken = serialize($token);
+        $serializedToken = \Zend_Json::encode($token);
 
         $config = $this->getMockBuilder(Config::class)
             ->setMethods(['setDataByPath', 'save'])

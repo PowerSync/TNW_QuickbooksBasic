@@ -54,7 +54,7 @@ class Invalid implements MessageInterface
      */
     public function getIdentity()
     {
-        return md5('ACCESS_TOKEN_INVALID');
+        return hash('sha256', 'ACCESS_TOKEN_INVALID');
     }
 
     /**
