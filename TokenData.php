@@ -143,7 +143,7 @@ class TokenData
      */
     public function setAccessToken($token)
     {
-        $serializedToken = \Zend_Json::encode($token);
+        $serializedToken = \serialize($token);
         $this->resourceConfig->saveConfig(
             Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS,
             $serializedToken,
