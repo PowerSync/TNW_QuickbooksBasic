@@ -11,11 +11,10 @@ use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 use Magento\Config\Model\ResourceModel\Config as ResourceConfig;
+use \Zend\Serializer\Serializer;
 
 /**
  * Class TokenData
- *
- * @package TNW\QuickbooksBasic
  */
 class TokenData
 {
@@ -73,7 +72,12 @@ class TokenData
         $serializedToken = $this->config->getValue(
             Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS
         );
-        $result = \unserialize($serializedToken);
+        if ($this->isJson($serializedToken)) {
+            $result = \Zend_Json::decode($serializedToken, \Zend_Json::TYPE_ARRAY);
+        } else {
+            $result = Serializer::unserialize($serializedToken);
+        }
+
         if ($result instanceof \Zend_Oauth_Token_Access) {
             $this->clearAccessToken();
             $result = null;
@@ -139,7 +143,7 @@ class TokenData
      */
     public function setAccessToken($token)
     {
-        $serializedToken = \serialize($token);
+        $serializedToken = \Zend_Json::encode($token);
         $this->resourceConfig->saveConfig(
             Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS,
             $serializedToken,
@@ -227,5 +231,23 @@ class TokenData
         );
         $this->cacheTypeList->cleanType('config');
         return $this;
+    }
+
+    /**
+     * @param $value
+     * @return bool
+     */
+    private function isJson($value)
+    {
+        if ($value === '') {
+            return false;
+        }
+
+        \json_decode($value);
+        if (\json_last_error()) {
+            return false;
+        }
+
+        return true;
     }
 }

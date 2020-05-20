@@ -14,6 +14,7 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Registry;
 use Magento\Store\Model\ScopeInterface;
 use TNW\QuickbooksBasic\Model\Quickbooks;
+use \Zend\Serializer\Serializer;
 
 /**
  * Class SourceAbstract
@@ -118,14 +119,18 @@ abstract class AbstractQuickbooksSource extends AbstractSource
         $newList = false;
 
         if ($sourceList) {
-            $sourceList = \unserialize($sourceList);
+            if ($this->isJson($sourceList)) {
+                $sourceList = \Zend_Json::decode($sourceList, \Zend_Json::TYPE_ARRAY);
+            } else {
+                $sourceList = Serializer::unserialize($sourceList);
+            }
         } else {
             $sourceList = $this->querySourceList();
             $newList = true;
         }
 
         if ($sourceList && count($sourceList) > 0 && $newList) {
-            $this->cache->save(\serialize($sourceList), $cacheId);
+            $this->cache->save(\Zend_Json::encode($sourceList), $cacheId);
         }
 
         return $sourceList;
@@ -226,5 +231,23 @@ abstract class AbstractQuickbooksSource extends AbstractSource
         /** @var string $cacheId */
         $cacheId = $this->getCacheId();
         $this->cache->remove($cacheId);
+    }
+
+    /**
+     * @param $value
+     * @return bool
+     */
+    private function isJson($value)
+    {
+        if ($value === '') {
+            return false;
+        }
+
+        \json_decode($value);
+        if (\json_last_error()) {
+            return false;
+        }
+
+        return true;
     }
 }
