@@ -11,11 +11,11 @@ class UidProcessor
 
     public function __construct($length = 7)
     {
-        if (!is_int($length) || $length > 32 || $length < 1) {
-            throw new \InvalidArgumentException('The uid length must be an integer between 1 and 32');
+        if (!is_int($length) || $length > 64 || $length < 1) {
+            throw new \InvalidArgumentException('The uid length must be an integer between 1 and 64');
         }
 
-        $this->uid = substr(hash('md5', uniqid('', true)), 0, $length);
+        $this->uid = substr(hash('sha256', uniqid('', true)), 0, $length);
     }
 
     public function __invoke(array $record)

@@ -455,7 +455,7 @@ class Quickbooks
         foreach ($parameters as $key => $val) {
             $url->addToQuery($key, $val);
         }
-        $state = md5(rand());
+        $state = hash('sha256', rand());
         $url->addToQuery('state', $state);
         $this->tokenData->setAuthTokenState($state);
 
