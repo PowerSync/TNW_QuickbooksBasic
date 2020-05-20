@@ -183,7 +183,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 'nullable' => false,
                 'primary' => true
             ], 'Log ID')
-            ->addColumn('transaction_uid', Table::TYPE_TEXT, 32, [
+            ->addColumn('transaction_uid', Table::TYPE_TEXT, 64, [
                 'nullable' => true,
                 'default' => null
             ], 'Transaction')

@@ -56,8 +56,7 @@ class AbstractQuickbooksSourceTest extends \PHPUnit_Framework_TestCase
             ['Id' => $id1, 'Name' => $label1],
             ['Id' => $id2, 'Name' => $label2],
         ];
-
-        $serializedSourceList = \serialize($sourceList);
+        $serializedSourceList = \Zend_Json::encode($sourceList);
 
         $data = [
             ['value' => $id1, 'label' => $label1],
@@ -106,7 +105,7 @@ class AbstractQuickbooksSourceTest extends \PHPUnit_Framework_TestCase
             ],
         ];
 
-        $serializedSourceArr = \serialize($sourceArr);
+        $serializedSourceArr = \Zend_Json::encode($sourceArr);
 
         $this->source->expects($this->once())
             ->method('getCacheId')
@@ -204,7 +203,7 @@ class AbstractQuickbooksSourceTest extends \PHPUnit_Framework_TestCase
             ['Id' => $id2, 'Name' => $label2],
         ];
 
-        $serializedSourceList = \serialize($sourceList);
+        $serializedSourceList = \Zend_Json::encode($sourceList);
 
         $data = ['Id' => $id1, 'Name' => $label1];
 
@@ -248,7 +247,7 @@ class AbstractQuickbooksSourceTest extends \PHPUnit_Framework_TestCase
             ['Id' => $id2, 'Name' => $label2],
         ];
 
-        $serializedSourceList = \serialize($sourceList);
+        $serializedSourceList = \Zend_Json::encode($sourceList);
 
         $data = ['Id' => $id2, 'Name' => $label2];
 
