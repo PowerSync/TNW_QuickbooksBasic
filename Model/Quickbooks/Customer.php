@@ -202,7 +202,6 @@ class Customer extends Quickbooks implements EntityInterface
         $companyName = '';
         /** @var \Magento\Sales\Model\Order\Address $address */
         foreach ($customer->getAddresses() as $address) {
-
             if (method_exists($address, 'isDefaultBilling')) {
                 if ($address->isDefaultBilling()) {
                     $companyName = $address->getCompany();
@@ -211,7 +210,16 @@ class Customer extends Quickbooks implements EntityInterface
                 $companyName = $address->getCompany();
             }
 
-            if (empty($companyName) && $address->isDefaultShipping()) {
+            if (
+                empty($companyName)
+                && (
+                    (
+                        method_exists($address, 'isDefaultShipping')
+                        && $address->isDefaultShipping()
+                    )
+                    || $address->getIsDefaultShipping()
+                )
+            ) {
                 $companyName = $address->getCompany();
             }
         }
