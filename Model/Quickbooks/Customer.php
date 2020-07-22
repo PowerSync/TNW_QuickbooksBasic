@@ -170,7 +170,9 @@ class Customer extends Quickbooks implements EntityInterface
         $responseBody = $this->getQuickbooksService()->checkResponse($response);
         if (empty($responseBody['Fault']['Error'])) {
             $this->addParentQuickbooksIdForContact([
-                $customer->getId() => $responseBody['Customer']['Id']
+                $customer->getId() => isset($responseBody['Customer']['ParentRef']['value'])
+                    ? $responseBody['Customer']['ParentRef']['value']
+                    : $responseBody['Customer']['Id']
             ]);
 
             $return['responses'][] = [
