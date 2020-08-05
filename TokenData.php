@@ -74,8 +74,10 @@ class TokenData
         );
         if ($this->isJson($serializedToken)) {
             $result = \Zend_Json::decode($serializedToken, \Zend_Json::TYPE_ARRAY);
-        } else {
+        } elseif ($serializedToken) {
             $result = Serializer::unserialize($serializedToken);
+        } else {
+            $result = null;
         }
 
         if ($result instanceof \Zend_Oauth_Token_Access) {
