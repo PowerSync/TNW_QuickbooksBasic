@@ -129,9 +129,11 @@ class CustomerRepository
                         $fullName = $customer->getFirstname() . ' ' .
                             $customer->getLastname();
 
-                        $this->messageManager->addSuccessMessage(
-                            __($successMessage, $fullName)
-                        );
+                        if ($isAdminArea) {
+                            $this->messageManager->addSuccessMessage(
+                                __($successMessage, $fullName)
+                            );
+                        }
                     }
                 } else {
                     $this->resetSyncStatus($customer);
