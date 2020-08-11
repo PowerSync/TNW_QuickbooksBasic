@@ -219,7 +219,11 @@ class Customer extends Quickbooks implements EntityInterface
                         method_exists($address, 'isDefaultShipping')
                         && $address->isDefaultShipping()
                     )
-                    || $address->getIsDefaultShipping()
+                    ||
+                    (
+                        method_exists($address, 'getIsDefaultShipping')
+                        && $address->getIsDefaultShipping()
+                    )
                 )
             ) {
                 $companyName = $address->getCompany();
