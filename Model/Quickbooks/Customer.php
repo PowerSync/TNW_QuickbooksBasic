@@ -23,6 +23,7 @@ use TNW\QuickbooksBasic\Model\Config as QuickbooksConfig;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 use TNW\QuickbooksBasic\Model\ResourceModel\Customer as CustomerResource;
 use TNW\QuickbooksBasic\Service\Quickbooks as QuickbooksService;
+use TNW\QuickbooksBasic\Model\Quickbooks\Customer as QuickbooksCustomerModel;
 
 /**
  * Class Customer
@@ -495,9 +496,11 @@ class Customer extends Quickbooks implements EntityInterface
         );
 
         if (isset($this->parentQuickbooksIdForContact[$customer->getId()])) {
-            $data['ParentRef']['value'] = $this->parentQuickbooksIdForContact[$customer->getId()];
-            $data['Job'] = true;
-            $data['BillWithParent'] = true;
+            if (!$customer->getCustomAttribute(QuickbooksCustomerModel::QUICKBOOKS_ID)->getValue()) {
+                $data['BillWithParent'] = true;
+                $data['Job'] = true;
+                $data['ParentRef']['value'] = $this->parentQuickbooksIdForContact[$customer->getId()];
+            }
         }
 
         return ['data' => $data, 'uri' => $uri];
