@@ -496,7 +496,9 @@ class Customer extends Quickbooks implements EntityInterface
         );
 
         if (isset($this->parentQuickbooksIdForContact[$customer->getId()])) {
-            if (!$customer->getCustomAttribute(QuickbooksCustomerModel::QUICKBOOKS_ID)->getValue()) {
+            if (!$customer->getCustomAttribute(QuickbooksCustomerModel::QUICKBOOKS_ID) ||
+                !$customer->getCustomAttribute(QuickbooksCustomerModel::QUICKBOOKS_ID)->getValue()
+            ) {
                 $data['BillWithParent'] = true;
                 $data['Job'] = true;
                 $data['ParentRef']['value'] = $this->parentQuickbooksIdForContact[$customer->getId()];
