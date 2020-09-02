@@ -437,7 +437,6 @@ class Quickbooks
      * Clear access token from database
      *
      * @return TokenData
-     * @throws \Exception
      */
     public function clearAccessToken()
     {

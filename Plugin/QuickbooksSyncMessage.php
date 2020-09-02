@@ -13,6 +13,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\Messages;
 use TNW\QuickbooksBasic\Model\Quickbooks;
+use TNW\QuickbooksBasic\Model\Quickbooks\Company as QuickbooksCompany;
 
 /**
  * Class QuickbooksSyncMessage
@@ -40,18 +41,26 @@ class QuickbooksSyncMessage
     protected $quickbooks;
 
     /**
-     * SyncPaymentMethodsMessage constructor.
+     * @var QuickbooksCompany
+     */
+    protected $quickbooksCompany;
+
+    /**
+     * QuickbooksSyncMessage constructor.
      * @param Factory $collectionFactory
      * @param UrlInterface $urlBuilder
      * @param Registry $registry
      * @param Quickbooks $quickbooks
+     * @param QuickbooksCompany $quickbooksCompany
      */
     public function __construct(
         Factory $collectionFactory,
         UrlInterface $urlBuilder,
         Registry $registry,
-        Quickbooks $quickbooks
+        Quickbooks $quickbooks,
+        QuickbooksCompany $quickbooksCompany
     ) {
+        $this->quickbooksCompany = $quickbooksCompany;
         $this->messageCollectionFactory = $collectionFactory;
         $this->registry = $registry;
         $this->urlBuilder = $urlBuilder;
@@ -81,20 +90,51 @@ class QuickbooksSyncMessage
         ) {
             if (!($this->quickbooks->getAccessToken() instanceof \OAuth\OAuth2\Token\StdOAuth2Token)) {
                 if (!$this->registry->registry('quickbooks_empty_access_token')) {
-                    $this->registry->register(
-                        'quickbooks_empty_access_token',
-                        true
-                    );
-                    $collection->addMessage(
-                        $this->messageCollectionFactory->create(
-                            MessageInterface::TYPE_WARNING,
-                            'QuickBooks connector has not been configured yet, synchronization was skipped. '
-                        )
-                    );
+                   $this->noAccessTokenMessage($collection);
+                }
+            } elseif ($this->quickbooks->getAccessToken()) {
+                $accessTokenCleared = false;
+                try {
+                    $data = $this->quickbooksCompany->getQuickbooksService()
+                        ->checkResponse($this->quickbooksCompany->read());
+                } catch (\Exception $e) {
+                    $this->quickbooksCompany->getQuickbooksService()->clearAccessToken();
+                    $accessTokenCleared = true;
+                }
+                if (isset($data) && isset($data['fault']['error']) && is_array($data['fault']['error'])) {
+                    foreach ($data['fault']['error'] as $error) {
+                        if (isset($error['code']) && $error['code'] == 3200) {
+                            $this->quickbooksCompany->getQuickbooksService()->clearAccessToken();
+                            $accessTokenCleared = true;
+                            break;
+                        }
+                    }
+                }
+                if ($accessTokenCleared) {
+                    $this->noAccessTokenMessage($collection);
                 }
             }
         }
 
         return $collection;
+    }
+
+    /**
+     * @param Collection $collection
+     */
+    private function noAccessTokenMessage($collection)
+    {
+        if (!is_bool($this->registry->registry('quickbooks_empty_access_token'))) {
+            $this->registry->register(
+                'quickbooks_empty_access_token',
+                true
+            );
+        }
+        $collection->addMessage(
+            $this->messageCollectionFactory->create(
+                MessageInterface::TYPE_WARNING,
+                'QuickBooks connector has not been configured yet, synchronization was skipped. '
+            )
+        );
     }
 }
