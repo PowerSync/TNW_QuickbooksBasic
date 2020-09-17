@@ -781,6 +781,10 @@ class Quickbooks
 
         $xml = simplexml_load_string($response);
         if (!$xml) {
+            if (is_string($response)) {
+                //TODO: for now all requests are went with accept json header, that case covers issues with curl
+                return ['Fault' => ['Error' => $response]];
+            }
             $error = implode('; ', array_map(function (\LibXMLError $error) {
                 return sprintf('Code: %s. Message: %s', $error->code, trim($error->message));
             }, libxml_get_errors()));
