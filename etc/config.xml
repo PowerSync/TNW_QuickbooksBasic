@@ -20,6 +20,9 @@
                 <db_log_status>1</db_log_status>
                 <db_log_limit>10000</db_log_limit>
             </advanced>
+            <synchronization>
+                <response_time>30</response_time>
+            </synchronization>
         </quickbooks>
         <quickbooks_customer>
             <customer>

@@ -9,6 +9,13 @@
             <label>General</label>
             <tab>tnw_quickbooks</tab>
             <resource>TNW_QuickbooksBasic::config</resource>
+            <group id="synchronization" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Synchronization</label>
+                <field id="response_time" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Response time out</label>
+                    <comment>Sets the time allowed for QBO to respond in seconds.</comment>
+                </field>
+            </group>
             <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0"
                    showInStore="0">
                 <label>General</label>
