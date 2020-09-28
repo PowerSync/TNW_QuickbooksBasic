@@ -182,4 +182,12 @@ class Config
     {
         return (int)$this->config->getValue('quickbooks/advanced/db_log_limit');
     }
+
+    /**
+     * @return int
+     */
+    public function getResponseTimeOut()
+    {
+        return (int)$this->config->getValue('quickbooks/synchronization/response_time');
+    }
 }

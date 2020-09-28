@@ -146,7 +146,9 @@ class Quickbooks
             'Accept' => 'application/json'
         ];
         try {
-            $response = $this->httpClientFactory->create()->retrieveResponse(
+            $response = $this->httpClientFactory->create()->setTimeout(
+                $this->quickbooksConfig->getResponseTimeOut()
+            )->retrieveResponse(
                 $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
                 null,
                 $requestHeaders,
@@ -229,7 +231,9 @@ class Quickbooks
         ];
 
         try {
-            $response = $this->httpClientFactory->create()->retrieveResponse(
+            $response = $this->httpClientFactory->create()->setTimeout(
+                $this->quickbooksConfig->getResponseTimeOut()
+            )->retrieveResponse(
                 $this->urlFactory->createFromAbsolute($apiUrl . $requestUri),
                 $queryString,
                 $headers,
@@ -290,7 +294,9 @@ class Quickbooks
         }
 
         /** @var $httpClient \OAuth\Common\Http\Client\CurlClient */
-        $httpClient = $this->httpClientFactory->create();
+        $httpClient = $this->httpClientFactory->create()->setTimeout(
+            $this->quickbooksConfig->getResponseTimeOut()
+        );
         $url = $this->urlFactory->createFromAbsolute($apiUrl . $uriComponents['uri']);
 
         if (isset($uriComponents['query'])) {
@@ -332,6 +338,7 @@ class Quickbooks
      */
     public function checkResponse($response)
     {
+        $this->logger->debug('Response check start:' . $response);
         /** @var array $result */
         $result = [];
 
@@ -348,6 +355,7 @@ class Quickbooks
                     break;
             }
         }
+        $this->logger->debug('Response end');
         return $result;
     }
 
