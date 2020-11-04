@@ -12,6 +12,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 use Magento\Config\Model\ResourceModel\Config as ResourceConfig;
 use \Zend\Serializer\Serializer;
+use TNW\QuickbooksBasic\Model\ResourceModel\TokenFactory;
+use OAuth\Common\Consumer\CredentialsFactory;
 
 /**
  * Class TokenData
@@ -38,9 +40,24 @@ class TokenData
     private $cacheTypeList;
 
     /**
-     * @var \OAuth\Common\Consumer\CredentialsFactory
+     * @var CredentialsFactory
      */
     private $credentialsFactory;
+
+    /**
+     * @var string
+     */
+    private $currentAccessTokenValue = '';
+
+    /**
+     * @var string
+     */
+    private $currentAccessTokenDate = '';
+
+    /**
+     * @var Model\ResourceModel\Token
+     */
+    private $tokenFactory;
 
     /**
      * TokenData constructor.
@@ -48,15 +65,18 @@ class TokenData
      * @param Factory $configFactory
      * @param ResourceConfig $resourceConfig
      * @param TypeListInterface $cacheTypeList
-     * @param \OAuth\Common\Consumer\CredentialsFactory $credentialsFactory
+     * @param CredentialsFactory $credentialsFactory
+     * @param TokenFactory $tokenFactory
      */
     public function __construct(
         ScopeConfigInterface $config,
         Factory $configFactory,
         ResourceConfig $resourceConfig,
         TypeListInterface $cacheTypeList,
-        \OAuth\Common\Consumer\CredentialsFactory $credentialsFactory
+        CredentialsFactory $credentialsFactory,
+        TokenFactory $tokenFactory
     ) {
+        $this->tokenFactory = $tokenFactory;
         $this->credentialsFactory = $credentialsFactory;
         $this->config = $config;
         $this->configFactory = $configFactory;
@@ -64,18 +84,28 @@ class TokenData
         $this->cacheTypeList = $cacheTypeList;
     }
 
+    /**
+     * @return mixed|null
+     * @throws \Zend_Json_Exception
+     */
     public function getAccessToken()
     {
         if ($this->isAccessTokenExpired()) {
             return null;
         }
-        $serializedToken = $this->config->getValue(
+        $tokenId = $this->config->getValue(
             Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS
         );
-        if ($this->isJson($serializedToken)) {
-            $result = \Zend_Json::decode($serializedToken, \Zend_Json::TYPE_ARRAY);
-        } elseif ($serializedToken) {
-            $result = Serializer::unserialize($serializedToken);
+        if (!$this->currentAccessTokenValue) {
+            $storedToken = $this->tokenFactory->create()->getById($tokenId);
+            if (!$this->currentAccessTokenValue && isset($storedToken['value'])) {
+                $this->currentAccessTokenValue = $storedToken['value'];
+            }
+        }
+        if ($this->isJson($this->currentAccessTokenValue)) {
+            $result = \Zend_Json::decode($this->currentAccessTokenValue, \Zend_Json::TYPE_ARRAY);
+        } elseif ($this->currentAccessTokenValue) {
+            $result = Serializer::unserialize($this->currentAccessTokenValue);
         } else {
             $result = null;
         }
@@ -111,9 +141,19 @@ class TokenData
      */
     public function getAccessTokenLastDate()
     {
-        return $this->config->getValue(
-            Quickbooks::XML_PATH_QUICKBOOKS_DATE_LAST_TIME_GET_DATA_TOKEN_ACCESS
+        $tokenId = $this->config->getValue(
+            Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS
         );
+        if (!$this->currentAccessTokenDate && $tokenId) {
+            $storedToken = $this->tokenFactory->create()->getById($tokenId);
+            if (!$this->currentAccessTokenValue && isset($storedToken['value'])) {
+                $this->currentAccessTokenValue = $storedToken['value'];
+            }
+            if ($storedToken && isset($storedToken['expires'])) {
+                $this->currentAccessTokenDate = $storedToken['expires'];
+            }
+        }
+        return $this->currentAccessTokenDate;
     }
 
     /**
@@ -145,20 +185,30 @@ class TokenData
      */
     public function setAccessToken($token)
     {
+        $this->clearAccessToken();
         $serializedToken = \serialize($token);
-        $this->resourceConfig->saveConfig(
-            Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS,
+        $tokenModel = $this->tokenFactory->create();
+        $tokenModel->saveRecord(
             $serializedToken,
-            ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-            0
+            date('Y-m-d')
         );
-        $this->resourceConfig->saveConfig(
-            Quickbooks::XML_PATH_QUICKBOOKS_DATE_LAST_TIME_GET_DATA_TOKEN_ACCESS,
-            date('Y-m-d'),
-            ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-            0
-        );
-        $this->cacheTypeList->cleanType('config');
+        $tokenRecord = $tokenModel->getLastRecord();
+        if (isset($tokenRecord['token_id'])) {
+            $this->resourceConfig->saveConfig(
+                Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS,
+                $tokenRecord['token_id'],
+                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                0
+            );
+            $this->currentAccessTokenDate = date('Y-m-d');
+            $this->resourceConfig->saveConfig(
+                Quickbooks::XML_PATH_QUICKBOOKS_DATE_LAST_TIME_GET_DATA_TOKEN_ACCESS,
+                $this->currentAccessTokenDate,
+                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                0
+            );
+            $this->currentAccessTokenValue = $serializedToken;
+        }
         return $this;
     }
 
@@ -167,19 +217,26 @@ class TokenData
      */
     public function clearAccessToken()
     {
-        $this->resourceConfig->saveConfig(
-            Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS,
-            null,
-            ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-            0
+        $this->currentAccessTokenValue = null;
+        $tokenId = $this->config->getValue(
+            Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS
         );
-        $this->resourceConfig->saveConfig(
-            Quickbooks::XML_PATH_QUICKBOOKS_DATE_LAST_TIME_GET_DATA_TOKEN_ACCESS,
-            null,
-            ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
-            0
-        );
-        $this->cacheTypeList->cleanType('config');
+        if ($tokenId) {
+            $this->tokenFactory->create()->deleteById($tokenId);
+            $this->resourceConfig->saveConfig(
+                Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS,
+                null,
+                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                0
+            );
+            $this->resourceConfig->saveConfig(
+                Quickbooks::XML_PATH_QUICKBOOKS_DATE_LAST_TIME_GET_DATA_TOKEN_ACCESS,
+                null,
+                ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                0
+            );
+            $this->cacheTypeList->cleanType('config');
+        }
         return $this;
     }
 

@@ -13,32 +13,43 @@ use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\UpgradeDataInterface;
+use TNW\QuickbooksBasic\Model\ResourceModel\TokenFactory;
+use TNW\QuickbooksBasic\Model\Quickbooks;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 
 /**
  * Class UpgradeData
- *
- * @package TNW\QuickbooksBasic\Setup
  */
 class UpgradeData implements UpgradeDataInterface
 {
-
     /** @var QuickbooksSetupFactory */
     protected $quickbooksSetupFactory;
+
     /** @var IndexerRegistry */
     protected $indexerRegistry;
+
     /** @var Config */
     protected $eavConfig;
 
     /**
+     * @var TokenFactory
+     */
+    protected $tokenFactory;
+
+    /**
+     * UpgradeData constructor.
      * @param QuickbooksSetupFactory $quickbooksSetupFactory
      * @param IndexerRegistry $indexerRegistry
      * @param Config $eavConfig
+     * @param TokenFactory $tokenFactory
      */
     public function __construct(
         QuickbooksSetupFactory $quickbooksSetupFactory,
         IndexerRegistry $indexerRegistry,
-        Config $eavConfig
+        Config $eavConfig,
+        TokenFactory $tokenFactory
     ) {
+        $this->tokenFactory = $tokenFactory;
         $this->quickbooksSetupFactory = $quickbooksSetupFactory;
         $this->indexerRegistry = $indexerRegistry;
         $this->eavConfig = $eavConfig;
@@ -179,6 +190,10 @@ class UpgradeData implements UpgradeDataInterface
             $this->version2118($context, $setup);
         }
 
+        if (version_compare($context->getVersion(), '2.1.38') < 0) {
+            $this->version2138($context, $setup);
+        }
+
         $setup->endSetup();
     }
 
@@ -198,5 +213,51 @@ class UpgradeData implements UpgradeDataInterface
                 'value' => date_create()->modify('+7 day')->getTimestamp()
             ]
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function version2138(
+        ModuleContextInterface $context,
+        ModuleDataSetupInterface $setup
+    ) {
+        $select = $setup->getConnection()
+            ->select()
+            ->from($setup->getTable('core_config_data'))
+            ->where(
+                'path =?',
+                Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS
+            );
+        $accessToken = $setup->getConnection()->fetchRow($select);
+
+        $select = $setup->getConnection()
+            ->select()
+            ->from($setup->getTable('core_config_data'))
+            ->where(
+                'path =?',
+                Quickbooks::XML_PATH_QUICKBOOKS_DATE_LAST_TIME_GET_DATA_TOKEN_ACCESS
+            );
+        $lastDate = $setup->getConnection()->fetchRow($select);
+
+        if (isset($accessToken['value']) && isset($lastDate['value'])) {
+            $tokenResourceModel = $this->tokenFactory->create();
+            $result = $tokenResourceModel->saveRecord(
+                $accessToken['value'],
+                $lastDate['value']
+            );
+            if ($result == 1) {
+                $currentRecord = $tokenResourceModel->getLastRecord();
+                $setup->getConnection()->insertOnDuplicate(
+                    $setup->getTable('core_config_data'),
+                    [
+                        'scope' => ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+                        'scope_id' => 0,
+                        'path' => Quickbooks::XML_PATH_QUICKBOOKS_DATA_TOKEN_ACCESS,
+                        'value' => $currentRecord['token_id']
+                    ]
+                );
+            }
+        }
     }
 }
