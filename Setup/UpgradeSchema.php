@@ -166,7 +166,37 @@ class UpgradeSchema implements UpgradeSchemaInterface
             $this->addSystemMessageTable($setup);
         }
 
+        if (version_compare($context->getVersion(), '2.1.38') < 0) {
+            $this->addQBOTokenTable($setup);
+        }
+
         $setup->endSetup();
+    }
+
+    private function addQBOTokenTable(SchemaSetupInterface $setup)
+    {
+        $table = $setup->getConnection()
+            ->newTable($setup->getTable('tnw_quickbooks_token'))
+            ->addColumn('token_id', Table::TYPE_SMALLINT, null, [
+                'identity' => true,
+                'unsigned' => true,
+                'nullable' => false,
+                'primary' => true
+            ], 'Token ID')
+            ->addColumn('value', Table::TYPE_TEXT, null, [
+                'nullable' => false,
+            ], 'Token Value')
+            ->addColumn('expires', Table::TYPE_TEXT, null, [
+                'nullable' => false
+            ], 'Expires')
+            ->addColumn('created_at', Table::TYPE_TIMESTAMP, null, [
+                'nullable' => false,
+                'default' => Table::TIMESTAMP_INIT
+            ], 'Create At')
+        ;
+
+        $setup->getConnection()
+            ->createTable($table);
     }
 
     /**

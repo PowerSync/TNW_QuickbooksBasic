@@ -218,19 +218,31 @@ class SyncManager
                     } else {
                         $errorMessage = $error['message'];
                     }
-                    $this->messageManager->addWarningMessage(__(
-                        'Magento type %2: %1',
-                        $errorMessage,
-                        $this->getTypeOfTheObject($error['object'])
-                    ));
+                    if (is_string($errorMessage)) {
+                        $this->messageManager->addWarningMessage(
+                            __(
+                                'Magento type %2: %1',
+                                $errorMessage,
+                                $this->getTypeOfTheObject($error['object'])
+                            ),
+                            'backend'
+                        );
+                    } elseif ($errorMessage instanceof \Magento\Framework\Phrase) {
+                        $this->messageManager->addWarningMessage(
+                            $errorMessage,
+                            'backend'
+                        );
+                    }
                 }
             }
         }
 
         foreach ($messages as $name => $message) {
             if (!empty($message['sync'])) {
-                $this->messageManager
-                    ->addSuccessMessage(__('The %2 of %1 were synchronized successfully', $name, $message['sync']));
+                $this->messageManager->addSuccessMessage(
+                    __('The %2 of %1 were synchronized successfully', $name, $message['sync']),
+                    'backend'
+                );
             }
         }
     }

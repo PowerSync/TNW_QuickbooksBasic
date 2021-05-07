@@ -22,6 +22,8 @@
         </arguments>
     </type>
 
+    <type name="TNW\QuickbooksBasic\TokenData" shared="true" />
+
     <virtualType name="quickbooksMessageSearchResult" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
         <arguments>
             <argument name="mainTable" xsi:type="string">tnw_quickbooks_message</argument>
