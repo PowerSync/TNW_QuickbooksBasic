@@ -14,7 +14,6 @@ use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Registry;
 use Magento\Store\Model\ScopeInterface;
 use TNW\QuickbooksBasic\Model\Quickbooks;
-use \Zend\Serializer\Serializer;
 
 /**
  * Class SourceAbstract
@@ -122,7 +121,7 @@ abstract class AbstractQuickbooksSource extends AbstractSource
             if ($this->isJson($sourceList)) {
                 $sourceList = \Zend_Json::decode($sourceList, \Zend_Json::TYPE_ARRAY);
             } else {
-                $sourceList = Serializer::unserialize($sourceList);
+                $sourceList = \unserialize($sourceList);
             }
         } else {
             $sourceList = $this->querySourceList();
