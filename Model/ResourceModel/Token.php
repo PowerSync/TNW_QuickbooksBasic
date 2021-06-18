@@ -6,7 +6,6 @@
 namespace TNW\QuickbooksBasic\Model\ResourceModel;
 
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
-use \Zend\Serializer\Serializer;
 
 /**
  * Class Token - used for data manipulations with token data for QBO
@@ -30,7 +29,7 @@ class Token extends AbstractDb
     public function saveRecord($tokenData, $expirationDate)
     {
         if (($this->isJson($tokenData)
-            || Serializer::unserialize($tokenData) instanceof \OAuth\OAuth2\Token\StdOAuth2Token)
+            || \unserialize($tokenData) instanceof \OAuth\OAuth2\Token\StdOAuth2Token)
             && $this->isDate($expirationDate)
         ) {
             return $this->getConnection()
