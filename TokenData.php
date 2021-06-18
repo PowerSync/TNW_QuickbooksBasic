@@ -11,7 +11,6 @@ use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 use Magento\Config\Model\ResourceModel\Config as ResourceConfig;
-use \Zend\Serializer\Serializer;
 use TNW\QuickbooksBasic\Model\ResourceModel\TokenFactory;
 use OAuth\Common\Consumer\CredentialsFactory;
 
@@ -105,7 +104,7 @@ class TokenData
         if ($this->isJson($this->currentAccessTokenValue)) {
             $result = \Zend_Json::decode($this->currentAccessTokenValue, \Zend_Json::TYPE_ARRAY);
         } elseif ($this->currentAccessTokenValue) {
-            $result = Serializer::unserialize($this->currentAccessTokenValue);
+            $result = \unserialize($this->currentAccessTokenValue);
         } else {
             $result = null;
         }
