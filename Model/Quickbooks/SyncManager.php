@@ -136,7 +136,9 @@ class SyncManager
                 throw new \Exception($message);
             }
 
-            $object->setQBORunNow($runNow);
+            if (method_exists($object, 'setData')) {
+                $object->setQBORunNow($runNow);
+            }
             return $entity->synchronize($object);
         }
 
