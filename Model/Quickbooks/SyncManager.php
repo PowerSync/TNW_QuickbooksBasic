@@ -136,6 +136,9 @@ class SyncManager
                 throw new \Exception($message);
             }
 
+            if (method_exists($object, 'setData')) {
+                $object->setData('q_b_o_run_now', $runNow);
+            }
             return $entity->synchronize($object);
         }
 
