@@ -3,7 +3,7 @@ version: 2
 jobs:
   deploy:
     machine:
-      enabled: true
+      image: ubuntu-2004:202201-02
     steps:
       - run:
           name: Deploy Over SSH
@@ -11,7 +11,7 @@ jobs:
             ssh $SSH_USER@$SSH_HOST "./release"
   tag-release:
     machine:
-      enabled: true
+      image: ubuntu-2004:202201-02
     working_directory: ~/tnw_extension/
     steps:
       - checkout
