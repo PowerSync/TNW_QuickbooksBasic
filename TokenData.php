@@ -104,7 +104,10 @@ class TokenData
         if ($this->isJson($this->currentAccessTokenValue)) {
             $result = \Zend_Json::decode($this->currentAccessTokenValue, \Zend_Json::TYPE_ARRAY);
         } elseif ($this->currentAccessTokenValue) {
-            $result = \unserialize($this->currentAccessTokenValue);
+            $result = \unserialize(
+                $this->currentAccessTokenValue,
+                ['allowed_classes' => [\OAuth\OAuth2\Token\StdOAuth2Token::class]]
+            );
         } else {
             $result = null;
         }
@@ -297,7 +300,7 @@ class TokenData
      */
     private function isJson($value)
     {
-        if ($value === '') {
+        if ($value === '' || $value === null) {
             return false;
         }
 

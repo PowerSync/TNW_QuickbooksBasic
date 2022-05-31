@@ -14,6 +14,9 @@
                 sortOrder="100"
                 disabled="false"/>
     </type>
+    <preference for="OAuth\Common\Http\Client\CurlClient"
+                type="TNW\QuickbooksBasic\Client\CurlClient"
+    />
     <type name="TNW\QuickbooksBasic\Model\Quickbooks\SyncManager">
         <arguments>
             <argument name="entities" xsi:type="array">
