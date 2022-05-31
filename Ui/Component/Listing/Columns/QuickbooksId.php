@@ -62,7 +62,7 @@ class QuickbooksId extends Column
                 Customer::QUICKBOOKS_CUSTOMER_URL;
             foreach ($dataSource['data']['items'] as & $item) {
                 $html = '';
-                if (strlen(trim($item['quickbooks_id'])) > 0) {
+                if ($item['quickbooks_id'] && strlen(trim($item['quickbooks_id'])) > 0) {
                     $html = sprintf(
                         '<a href="%s" title="%s" target="_blank">%s</a>',
                         $url . $item['quickbooks_id'],
