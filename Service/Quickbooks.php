@@ -367,23 +367,6 @@ class Quickbooks
             $status = $e->getCode();
             $response = $e->getMessage();
         }
-        $alreadyProcessedRequest = $this->dataPersistor->get('quickbooks_request');
-        if (is_array($alreadyProcessedRequest)
-            && array_key_exists($url->getPath(), $alreadyProcessedRequest)
-        ) {
-            $this->logger->debug("QUICKBOOKS REQUEST EXISTS");
-        } else {
-            $this->dataPersistor->set(
-                'quickbooks_request',
-                [
-                    $url->getPath() => [
-                        'status' => $status,
-                        'response' => $response
-
-                    ]
-                ]
-            );
-        }
         $this->logger->debug('QUICKBOOKS REQUEST URL:' . $url);
         $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
         $this->logger->debug('QUICKBOOKS REQUEST BODY:' . $encodedData);
