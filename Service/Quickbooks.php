@@ -936,4 +936,12 @@ class Quickbooks
         }
         return false;
     }
+
+    /**
+     * Clear up session data for quickbooks requests
+     */
+    public function __destruct()
+    {
+        $this->dataPersistor->set('quickbooks_request', []);
+    }
 }
