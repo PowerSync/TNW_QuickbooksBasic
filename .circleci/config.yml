@@ -105,34 +105,6 @@ jobs:
           MYSQL_DATABASE: magento
           MYSQL_ROOT_PASSWORD: docker
 
-  m234-commerce-php72:
-    <<: *base-image
-    docker:
-      - image: powersync/magento-builds:m234-commerce-php72
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASS
-      - image: circleci/mysql:5.7
-        environment:
-          MYSQL_PASSWORD: mage
-          MYSQL_USER: mage
-          MYSQL_DATABASE: magento
-          MYSQL_ROOT_PASSWORD: docker
-
-  m234-open_source-php72:
-    <<: *base-image
-    docker:
-        -   image: powersync/magento-builds:m234-open_source-php72
-            auth:
-                username: $DOCKER_USER
-                password: $DOCKER_PASS
-        -   image: circleci/mysql:5.7
-            environment:
-                MYSQL_PASSWORD: mage
-                MYSQL_USER: mage
-                MYSQL_DATABASE: magento
-                MYSQL_ROOT_PASSWORD: docker
-
   m235-commerce-php73:
       <<: *base-image
       docker:
@@ -161,25 +133,6 @@ jobs:
                   MYSQL_DATABASE: magento
                   MYSQL_ROOT_PASSWORD: docker
 
-  magento-coding-standard:
-      docker:
-          -   image: powersync/magento-builds:m234-commerce-php72
-              auth:
-                  username: $DOCKER_USER
-                  password: $DOCKER_PASS
-          -   image: circleci/mysql:5.7
-              environment:
-                  MYSQL_PASSWORD: mage
-                  MYSQL_USER: mage
-                  MYSQL_DATABASE: magento
-                  MYSQL_ROOT_PASSWORD: docker
-      working_directory: ~/tnw_extension
-      steps:
-          - checkout
-          -   run:
-                  name: Run Magento Coding Standard
-                  command: |
-                      /var/www/html/magento-coding-standard/vendor/bin/phpcs $CIRCLE_WORKING_DIRECTORY --standard=MEQP2 --severity=10 --extensions=php,phtml
 
   check-composer-installation:
     <<: *base-image
@@ -336,12 +289,6 @@ workflows:
             branches:
               only: master
 
-      - magento-coding-standard:
-          context: powersync
-          filters:
-            branches:
-              only: master
-
       - deploy:
           context: powersync
           requires:
@@ -356,7 +303,6 @@ workflows:
             - m234-open_source-php72
             - m235-commerce-php73
             - m235-open_source-php73
-            - magento-coding-standard
           filters:
             branches:
               only: master
