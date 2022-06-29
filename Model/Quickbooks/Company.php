@@ -9,7 +9,7 @@ namespace TNW\QuickbooksBasic\Model\Quickbooks;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 
 /**
- * Class Company
+ * Class Company - test commit
  * @package TNW\QuickbooksBasic\Model\Quickbooks
  */
 class Company extends Quickbooks
