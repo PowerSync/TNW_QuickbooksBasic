@@ -17,6 +17,10 @@ use Psr\Log\LoggerInterface;
 use TNW\QuickbooksBasic\Model\Config as QuickbooksConfig;
 use TNW\QuickbooksBasic\Model\Quickbooks as ModelQuickbooks;
 use TNW\QuickbooksBasic\TokenData;
+use Magento\Framework\App\Request\DataPersistorInterface;
+use OAuth\Common\Http\Uri\UriFactory;
+use OAuth\Common\Http\Client\CurlClientFactory;
+use OAuth\OAuth2\Token\StdOAuth2TokenFactory;
 
 /**
  * Class Quickbooks
@@ -30,16 +34,24 @@ class Quickbooks
      */
     const MAX_RESULTS_QUERY_LIMITATION_STRING = ' MAXRESULTS 1000';
 
-    /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
+    /**
+     * @var ScopeConfigInterface
+     */
     protected $config;
 
-    /** @var \Psr\Log\LoggerInterface */
+    /**
+     * @var LoggerInterface
+     */
     protected $logger;
 
-    /** @var \TNW\QuickbooksBasic\TokenData */
+    /**
+     * @var TokenData
+     */
     protected $tokenData;
 
-    /** @var \TNW\QuickbooksBasic\Model\Config */
+    /**
+     * @var QuickbooksConfig
+     */
     protected $quickbooksConfig;
 
     /** @var ManagerInterface */
@@ -55,19 +67,24 @@ class Quickbooks
     protected $state;
 
     /**
-     * @var \OAuth\Common\Http\Uri\UriFactory
+     * @var UriFactory
      */
     protected $urlFactory;
 
     /**
-     * @var \OAuth\Common\Http\Client\CurlClientFactory
+     * @var CurlClientFactory
      */
     protected $httpClientFactory;
 
     /**
-     * @var \OAuth\OAuth2\Token\StdOAuth2TokenFactory
+     * @var StdOAuth2TokenFactory
      */
     protected $auth2TokenFactory;
+
+    /**
+     * @var DataPersistorInterface
+     */
+    protected $dataPersistor;
 
     /**
      * Quickbooks constructor.
@@ -78,10 +95,11 @@ class Quickbooks
      * @param ManagerInterface $messageManager
      * @param DecoderInterface $decoder
      * @param Registry $registry
-     * @param \OAuth\Common\Http\Uri\UriFactory $urlFactory
+     * @param UriFactory $urlFactory
      * @param State $state
-     * @param \OAuth\Common\Http\Client\CurlClientFactory $httpClientFactory
-     * @param \OAuth\OAuth2\Token\StdOAuth2TokenFactory $auth2TokenFactory
+     * @param CurlClientFactory $httpClientFactory
+     * @param StdOAuth2TokenFactory $auth2TokenFactory
+     * @param DataPersistorInterface $dataPersistor
      */
     public function __construct(
         ScopeConfigInterface $config,
@@ -91,11 +109,13 @@ class Quickbooks
         ManagerInterface $messageManager,
         DecoderInterface $decoder,
         Registry $registry,
-        \OAuth\Common\Http\Uri\UriFactory $urlFactory,
+        UriFactory $urlFactory,
         State $state,
-        \OAuth\Common\Http\Client\CurlClientFactory $httpClientFactory,
-        \OAuth\OAuth2\Token\StdOAuth2TokenFactory $auth2TokenFactory
+        CurlClientFactory $httpClientFactory,
+        StdOAuth2TokenFactory $auth2TokenFactory,
+        DataPersistorInterface $dataPersistor
     ) {
+        $this->dataPersistor = $dataPersistor;
         $this->auth2TokenFactory = $auth2TokenFactory;
         $this->httpClientFactory = $httpClientFactory;
         $this->urlFactory = $urlFactory;
@@ -145,6 +165,11 @@ class Quickbooks
             'Authorization' => 'Bearer ' . $token->getAccessToken(),
             'Accept' => 'application/json'
         ];
+        $requestCacheKey = $apiUrl . $requestUri;
+        $requestCache = $this->getRequestCache($requestCacheKey);
+        if ($requestCache) {
+            return $requestCache;
+        }
         try {
             $response = $this->httpClientFactory->create()->setTimeout(
                 $this->quickbooksConfig->getResponseTimeOut()
@@ -155,6 +180,10 @@ class Quickbooks
                 \Zend_Http_Client::GET
             );
             $status = 200;
+            $this->setRequestCache(
+                $requestCacheKey,
+                $response
+            );
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
             $response = $e->getMessage();
@@ -230,6 +259,11 @@ class Quickbooks
             'Content-Type' => 'application/text'
         ];
 
+        $requestCacheKey = $apiUrl . $requestUri . $queryString;
+        $requestCache = $this->getRequestCache($requestCacheKey);
+        if ($requestCache) {
+            return $requestCache;
+        }
         try {
             $response = $this->httpClientFactory->create()->setTimeout(
                 $this->quickbooksConfig->getResponseTimeOut()
@@ -240,11 +274,14 @@ class Quickbooks
                 \Zend_Http_Client::POST
             );
             $status = 200;
+            $this->setRequestCache(
+                $requestCacheKey,
+                $response
+            );
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
             $response = $e->getMessage();
         }
-
         $this->logger->debug('QUICKBOOKS REQUEST URL:' . $apiUrl . $requestUri);
         $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
         $this->logger->debug('QUICKBOOKS REQUEST BODY:' . $queryString);
@@ -309,6 +346,11 @@ class Quickbooks
             'Content-Type' => 'application/json'
         ];
 
+        $requestCacheKey = $url->getAbsoluteUri() . $encodedData;
+        $requestCache = $this->getRequestCache($requestCacheKey);
+        if ($requestCache) {
+            return $requestCache;
+        }
         try {
             $response = $httpClient->retrieveResponse(
                 $url,
@@ -317,11 +359,14 @@ class Quickbooks
                 \Zend_Http_Client::POST
             );
             $status = 200;
+            $this->setRequestCache(
+                $requestCacheKey,
+                $response
+            );
         } catch (\OAuth\Common\Http\Exception\TokenResponseException $e) {
             $status = $e->getCode();
             $response = $e->getMessage();
         }
-
         $this->logger->debug('QUICKBOOKS REQUEST URL:' . $url);
         $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
         $this->logger->debug('QUICKBOOKS REQUEST BODY:' . $encodedData);
@@ -853,5 +898,50 @@ class Quickbooks
         }
 
         return $result;
+    }
+
+    /**
+     * @param $key
+     * @param $data
+     */
+    private function setRequestCache($key, $data)
+    {
+        $parsedResult = $this->checkResponse($data);
+        if (array_key_exists('Fault', $parsedResult)
+            || (array_key_exists('QueryResponse', $parsedResult) && !$parsedResult['QueryResponse'])
+        ) {
+            return $this;
+        }
+        $key = hash('adler32', $key);
+        $alreadyProcessedRequest = $this->dataPersistor->get('quickbooks_request');
+        if (!is_array($alreadyProcessedRequest)) {
+            $alreadyProcessedRequest = [];
+        }
+        $alreadyProcessedRequest[$key] = $data;
+        $this->dataPersistor->set('quickbooks_request', $alreadyProcessedRequest);
+    }
+
+    /**
+     * @param $key
+     * @return bool|mixed
+     */
+    private function getRequestCache($key)
+    {
+        $key = hash('adler32', $key);
+        $alreadyProcessedRequest = $this->dataPersistor->get('quickbooks_request');
+        if (is_array($alreadyProcessedRequest)
+            && array_key_exists($key, $alreadyProcessedRequest)
+        ) {
+            return $alreadyProcessedRequest[$key];
+        }
+        return false;
+    }
+
+    /**
+     * Clear up session data for quickbooks requests
+     */
+    public function __destruct()
+    {
+        $this->dataPersistor->set('quickbooks_request', []);
     }
 }

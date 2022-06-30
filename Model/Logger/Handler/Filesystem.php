@@ -44,8 +44,9 @@ class Filesystem extends Base
 
     /**
      * @param array $record
+     * @return void
      */
-    public function write(array $record)
+    public function write(array $record) :void
     {
         if (!$this->quickbooksConfig->getLogStatus()) {
             return;
