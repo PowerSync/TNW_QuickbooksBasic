@@ -363,32 +363,42 @@ class Customer extends Quickbooks implements EntityInterface
         //prepare base customer data
         /** @var array $data */
         $data = [
-            'Title' => \mb_substr(
-                $customer->getPrefix(),
-                0,
-                self::TITLE_MAX_LENGTH
-            ),
-            'GivenName' => \mb_substr(
-                $customer->getFirstname(),
-                0,
-                self::GIVEN_NAME_MAX_LENGTH
-            ),
-            'MiddleName' => \mb_substr(
-                $customer->getMiddlename(),
-                0,
-                self::MIDDLE_NAME_MAX_LENGTH
-            ),
-            'FamilyName' => \mb_substr(
-                $customer->getLastname(),
-                0,
-                self::FAMILY_NAME_MAX_LENGTH
-            ),
+            'Title' => $customer->getPrefix()
+                ? \mb_substr(
+                    $customer->getPrefix(),
+                    0,
+                    self::TITLE_MAX_LENGTH
+                )
+                : '',
+            'GivenName' => $customer->getFirstname()
+                ? \mb_substr(
+                    $customer->getFirstname(),
+                    0,
+                    self::GIVEN_NAME_MAX_LENGTH
+                )
+                : '',
+            'MiddleName' => $customer->getMiddlename()
+                ? \mb_substr(
+                    $customer->getMiddlename(),
+                    0,
+                    self::MIDDLE_NAME_MAX_LENGTH
+                )
+                : '',
+            'FamilyName' => $customer->getLastname()
+                ? \mb_substr(
+                    $customer->getLastname(),
+                    0,
+                    self::FAMILY_NAME_MAX_LENGTH
+                )
+                : '',
             'FullyQualifiedName' => $this->getCustomerName($customer),
-            'PrintOnCheckName' => \mb_substr(
-                $this->getCustomerName($customer),
-                0,
-                self::PRINT_ON_CHECK_NAME_MAX_LENGTH
-            ),
+            'PrintOnCheckName' => $this->getCustomerName($customer)
+                ? \mb_substr(
+                    $this->getCustomerName($customer),
+                    0,
+                    self::PRINT_ON_CHECK_NAME_MAX_LENGTH
+                )
+                : '',
             'PrimaryEmailAddr' => [
                 'Address' => $customer->getEmail(),
             ],
@@ -570,7 +580,7 @@ class Customer extends Quickbooks implements EntityInterface
         $displayName = $this->correctCompanyName($displayName);
         if (\mb_strlen($displayName) > self::DISPLAY_NAME_MAX_LENGTH) {
             $customerNameMaxLen = self::DISPLAY_NAME_MAX_LENGTH - \mb_strlen($id);
-            $customerName = \mb_substr($customerName, 0, $customerNameMaxLen - 3);
+            $customerName = $customerName ? \mb_substr($customerName, 0, $customerNameMaxLen - 3) : '';
             $displayName = $customerName . '...' . $id;
         }
 

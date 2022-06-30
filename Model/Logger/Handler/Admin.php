@@ -48,7 +48,7 @@ class Admin extends AbstractProcessingHandler
      * @return void
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    protected function write(array $record)
+    protected function write(array $record) : void
     {
         if (strcasecmp($this->appState->getAreaCode(), \Magento\Framework\App\Area::AREA_ADMINHTML) !== 0) {
             return;

@@ -2,13 +2,13 @@
   "name": "tnw/quickbooksbasic",
   "description": "Magento 2 and Quickbooks Basic Connector",
   "type": "magento2-module",
-  "version": "2.1.40",
+  "version": "2.1.41",
   "license": [
     "gpl-3.0"
   ],
   "require": {
     "magento/framework": ">100",
-    "tnw/marketing": "2.0.5"
+    "tnw/marketing": "2.7.0"
   },
   "autoload": {
     "files": ["registration.php"],
