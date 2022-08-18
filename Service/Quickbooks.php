@@ -159,6 +159,9 @@ class Quickbooks
             && time() > $token->getEndOfLife()
         ) {
             $token = $this->refreshToken($token);
+            if (!$token) {
+                throw new \Magento\Framework\Exception\LocalizedException(__('Unknown access token'));
+            }
         }
 
         $requestHeaders = [
@@ -250,6 +253,9 @@ class Quickbooks
             && time() > $token->getEndOfLife()
         ) {
             $token = $this->refreshToken($token);
+            if (!$token) {
+                throw new \Magento\Framework\Exception\LocalizedException(__('Unknown access token'));
+            }
         }
 
         $queryString .= self::MAX_RESULTS_QUERY_LIMITATION_STRING;
@@ -328,6 +334,9 @@ class Quickbooks
             && time() > $token->getEndOfLife()
         ) {
             $token = $this->refreshToken($token);
+            if (!$token) {
+                throw new \Magento\Framework\Exception\LocalizedException(__('Unknown access token'));
+            }
         }
 
         /** @var $httpClient \OAuth\Common\Http\Client\CurlClient */
@@ -535,7 +544,6 @@ class Quickbooks
     public function refreshToken($token = null)
     {
         $i=0;
-        $invalidGrantError = true;
         do {
             if ($token === null) {
                 $token = $this->getAccessToken();
@@ -583,6 +591,10 @@ class Quickbooks
             $i++;
         } while ($invalidGrantError && $i <= 1);
 
+        if ($invalidGrantError) {
+            $this->clearAccessToken();
+            $token = null;
+        }
         return $token;
     }
 
