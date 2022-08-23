@@ -1,0 +1,153 @@
+{
+  "type": "extension",
+  "sku": "tnw/quickbooks-full",
+  "url_key": "tnw-quickbooks-full",
+  "platform": "M2",
+  "name": "QuickBooks Integration",
+  "license_type": "osl",
+  "external_services": {
+    "is_saas": true,
+    "items": [
+      {
+        "name": "QuickBooks Online",
+        "url": "https://quickbooks.intuit.com/",
+        "owner": "self",
+        "pay_to": "both"
+      }
+    ]
+  },
+  "pricing_model": {
+    "pricing_type": "one-time",
+    "payment_period": 1
+  },
+  "prices": [
+    {
+      "edition": "CE",
+      "currency_code": "USD",
+      "price": 599.00,
+      "installation_price": 350.00
+    },
+    {
+      "edition": "EE",
+      "currency_code": "USD",
+      "price": 1299.00,
+      "installation_price": 700.00
+    },
+    {
+      "edition": "ECE",
+      "currency_code": "USD",
+      "price": 1299.00,
+      "installation_price": 700.00
+    }
+  ],
+  "support_tiers": [
+    {
+      "tier": 1,
+      "edition": "CE",
+      "monthly_period": 12,
+      "prices": [
+        {
+          "currency_code": "USD",
+          "price": 1200
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "edition": "EE",
+      "monthly_period": 12,
+      "prices": [
+        {
+          "currency_code": "USD",
+          "price": 2400
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "edition": "EСE",
+      "monthly_period": 12,
+      "prices": [
+        {
+          "currency_code": "USD",
+          "price": 2400
+        }
+      ]
+    }
+  ],
+  "version_compatibility": [
+    {
+      "edition": "CE",
+      "versions": [
+        "2.3",
+        "2.4"
+      ]
+    },
+    {
+      "edition": "EE",
+      "versions": [
+        "2.3",
+        "2.4"
+      ]
+    },
+    {
+      "edition": "ECE",
+      "versions": [
+        "2.3",
+        "2.4"
+      ]
+    }
+  ],
+  "documentation_artifacts": {
+    "user": {
+      "file_upload_id": "4034154"
+    },
+    "installation": {
+      "file_upload_id": "6034154"
+    },
+    "reference": {
+      "file_upload_id": "5ec6d5564e1958.12311447.0"
+    }
+  },
+  "media_artifacts": {
+    "icon_image": {
+      "file_upload_id": "1112776"
+    },
+    "gallery_images": [
+      {
+        "file_upload_id": "1112777"
+      },
+      {
+        "file_upload_id": "1112778"
+      },
+      {
+        "file_upload_id": "1112779"
+      },
+      {
+        "file_upload_id": "1112780"
+      },
+      {
+        "file_upload_id": "1112781"
+      },
+      {
+        "file_upload_id": "1112782"
+      },
+      {
+        "file_upload_id": "1112783"
+      },
+      {
+        "file_upload_id": "1112784"
+      },
+      {
+        "file_upload_id": "1112785"
+      }
+    ],
+    "video_urls": [
+      "https://www.youtube.com/watch?v=Fd50nqpoESI"
+    ]
+  },
+  "short_description": "",
+  "long_description": "<p style=\"color: #202021;\"><strong><span style=\"color: #0000ff;\"><a style=\"color: #1a6b70;\" href=\"https:\/\/quickbooks.intuit.com\/\"><span style=\"color: #0000ff;\">QuickBooks Online<\/span><\/a><\/span>&nbsp;<\/strong>is a cloud accounting software solution for small and medium businesses. It allows you to use your computer, iPad or mobile phone to invoice your customers, track and report your revenue and expenses, manage and pay bills, and handle payroll.<\/p>\n<p style=\"color: #202021;\">By installing our connector, you can eliminate unnecessary data entry and reduce operational cost when managing your books, as well as increase the quality of your financial reporting. Our solution allows you to automatically synchronize Magento store data with QuickBooks Online. The connector will capture business-critical data without having to rely on your staff to manually re-enter and update customer, catalog and sales information into QuickBooks.<\/p>\n<p style=\"color: #202021;\">&nbsp;<\/p>\n<h3 style=\"color: #202021;\">Account &amp; Pricing<\/h3>\n<p style=\"color: #202021;\"><strong>You must have an active&nbsp;<span style=\"color: #0000ff;\"><a style=\"color: #1a6b70;\" href=\"http:\/\/quickbooks.intuit.com\/online\/\"><span style=\"color: #0000ff;\">QuickBooks Online<\/span><\/a><\/span>&nbsp;account to use this integration. Additional fees apply! For more information on pricing, visit the QuickBooks&nbsp;<span style=\"color: #0000ff;\"><a style=\"color: #1a6b70;\" href=\"https:\/\/quickbooks.intuit.com\/pricing\/\"><span style=\"color: #0000ff;\">pricing page<\/span><\/a>.<\/span><\/strong><\/p>\n<p style=\"color: #202021;\">&nbsp;<\/p>\n<h3 style=\"color: #202021;\">Benefits &amp; Key Features<\/h3>\n<ul style=\"color: #202021;\">\n<li>A simple setup allowing you to connect to a QuickBooks Online Sandbox and a Quickbooks Online Production account<\/li>\n<li>Automated customer &amp; address synchronization<\/li>\n<li>Automated catalog synchronization (including product images and inventory)<\/li>\n<li>Flexible mechanism to allow&nbsp;sales tax tracking and reporting for different Sales Tax Agencies<\/li>\n<li>Payment&nbsp;method configuration capabilities that offer the most flexibility when recording revenue under various Accounts in QuickBooks.<\/li>\n<li>Flexible integrations with QuickBooks Invoices, Payments, Sales Receipts and Refund Receipts<\/li>\n<li>Built-in support for Accrual and Cash accounting methods<\/li>\n<li>Ability to track and report on Discounts given<\/li>\n<li>Includes data normalization (duplicate prevention mechanism)<\/li>\n<li>Supports real-time synchronization and on-demand synchronization<\/li>\n<li>OpenSource code to allow customizations to fit any custom business process<\/li>\n<li>Built with scale in mind (supports enterprise data synchronization volumes)&nbsp;<\/li>\n<\/ul>\n<h3>&nbsp;<\/h3>\n<h3>Installation &amp; Support<\/h3>\n<p>For your convenience, PowerSync also offers full <a href=\"https:\/\/powersync.biz\/contact-us\/\">installation and setup upon request<\/a>. The service may include installation of files in a testing and production environment, as well as proper accounting configuration. Data is never perfect and your business processes may be unique. Eliminate the&nbsp;headache by <a href=\"https:\/\/powersync.biz\/contact-us\/\">requesting support<\/a> and we'll also assist you with upgrades and error resolution.<\/p>",
+  "release_notes": "Please see https://visit.powersync.biz/3ADcKVK",
+  "stability": "stable"
+}
