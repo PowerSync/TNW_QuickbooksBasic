@@ -37,7 +37,7 @@ mv $META_ARCH_NAME eqp
 cp -r metapackage/data eqp
 cd eqp
 TMP=$EQP_SHARED_MODULES
-EQP_SHARED_MODULES=$EQP_BASIC_SKU # Rewrite EQP_SHARED_MODULES variable as original contains private modules
+EQP_SHARED_MODULES=$EQP_SHARED_SKU # Rewrite EQP_SHARED_MODULES variable as original contains private modules
 bin/main $META_ARCH_NAME $VERSION 1
 EQP_SHARED_MODULES=$TMP # Restore EQP_SHARED_MODULES variable
 RESULT=$?
