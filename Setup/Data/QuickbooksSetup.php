@@ -4,7 +4,7 @@
  * See TNW_LICENSE.txt for license details.
  */
 
-namespace TNW\QuickbooksBasic\Setup;
+namespace TNW\QuickbooksBasic\Setup\Data;
 
 use Magento\Eav\Setup\EavSetup;
 

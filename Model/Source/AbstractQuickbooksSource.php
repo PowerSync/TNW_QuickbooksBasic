@@ -12,6 +12,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Config\CacheInterface;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Registry;
+use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Store\Model\ScopeInterface;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 
@@ -38,6 +39,11 @@ abstract class AbstractQuickbooksSource extends AbstractSource
     protected $messageManager;
 
     /**
+     * @var \Magento\Framework\Serialize\SerializerInterface
+     */
+    private $serializer;
+
+    /**
      * @param CacheInterface $cache
      * @param Quickbooks $quickbooks
      * @param ScopeConfigInterface $config
@@ -49,13 +55,15 @@ abstract class AbstractQuickbooksSource extends AbstractSource
         Quickbooks $quickbooks,
         ScopeConfigInterface $config,
         Registry $registry,
-        ManagerInterface $messageManager
+        ManagerInterface $messageManager,
+        SerializerInterface $serializer
     ) {
         $this->cache = $cache;
         $this->quickbooks = $quickbooks;
         $this->config = $config;
         $this->registry = $registry;
         $this->messageManager = $messageManager;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -121,7 +129,7 @@ abstract class AbstractQuickbooksSource extends AbstractSource
             if ($this->isJson($sourceList)) {
                 $sourceList = \Zend_Json::decode($sourceList, \Zend_Json::TYPE_ARRAY);
             } else {
-                $sourceList = \unserialize($sourceList);
+                $sourceList = $this->serializer->unserialize($sourceList);
             }
         } else {
             $sourceList = $this->querySourceList();

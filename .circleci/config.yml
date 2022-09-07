@@ -176,6 +176,11 @@ jobs:
       working_directory: ~/tnw_extension
       steps:
           - checkout
+          - run:
+                name: Update coding standarts
+                command: |
+                  cd /var/www/html/magento-coding-standard
+                  composer update
           -   run:
                   name: Run Magento Coding Standard
                   command: |

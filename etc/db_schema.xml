@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright © 2022 TechNWeb, Inc. All rights reserved.
+  ~ See TNW_LICENSE.txt for license details.
+  -->
+
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="quickbooks_billing_address" resource="default" engine="innodb" comment="quickbooks_billing_address">
+        <column xsi:type="int" name="address_id" unsigned="true" nullable="false" identity="true"/>
+        <column xsi:type="int" name="quickbooks_id" unsigned="true" nullable="false"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="address_id"/>
+        </constraint>
+    </table>
+    <table name="quickbooks_shipping_address" resource="default" engine="innodb" comment="quickbooks_shipping_address">
+        <column xsi:type="int" name="address_id" unsigned="true" nullable="false" identity="true"/>
+        <column xsi:type="int" name="quickbooks_id" unsigned="true" nullable="false"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="address_id"/>
+        </constraint>
+    </table>
+    <table name="tnw_quickbooks_message" resource="default" engine="innodb" comment="tnw_quickbooks_message">
+        <column xsi:type="bigint" name="message_id" unsigned="true" nullable="false" identity="true" comment="Log ID"/>
+        <column xsi:type="text" name="transaction_uid" nullable="true" comment="Transaction"/>
+        <column xsi:type="smallint" name="level" unsigned="true" nullable="true" default="null" comment="Level"/>
+        <column xsi:type="smallint" name="website_id" unsigned="true" nullable="true" default="null" comment="Website"/>
+        <column xsi:type="text" name="message" nullable="true" comment="Message"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="Create At"/>
+        <constraint xsi:type="foreign" referenceId="TNW_QUICKBOOKS_MESSAGE_WEBSITE_ID_STORE_WEBSITE_WEBSITE_ID"
+                    table="tnw_quickbooks_message" column="website_id" referenceTable="store_website"
+                    referenceColumn="website_id" onDelete="CASCADE"/>
+        <index referenceId="TNW_QUICKBOOKS_MESSAGE_WEBSITE_ID" indexType="btree">
+            <column name="website_id"/>
+        </index>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="message_id"/>
+        </constraint>
+    </table>
+    <table name="tnw_quickbooks_token" resource="default" engine="innodb" comment="tnw_quickbooks_token">
+        <column xsi:type="smallint" name="token_id" unsigned="true" nullable="false" identity="true" comment="Token ID"/>
+        <column xsi:type="text" name="value" nullable="false" comment="Token Value"/>
+        <column xsi:type="text" name="expires" nullable="false" comment="Expires"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="Create At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="token_id"/>
+        </constraint>
+    </table>
+</schema>

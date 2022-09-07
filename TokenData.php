@@ -9,6 +9,7 @@ namespace TNW\QuickbooksBasic;
 use Magento\Config\Model\Config\Factory;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Serialize\SerializerInterface;
 use TNW\QuickbooksBasic\Model\Quickbooks;
 use Magento\Config\Model\ResourceModel\Config as ResourceConfig;
 use TNW\QuickbooksBasic\Model\ResourceModel\TokenFactory;
@@ -59,6 +60,11 @@ class TokenData
     private $tokenFactory;
 
     /**
+     * @var \Magento\Framework\Serialize\SerializerInterface
+     */
+    private $serializer;
+
+    /**
      * TokenData constructor.
      * @param ScopeConfigInterface $config
      * @param Factory $configFactory
@@ -66,6 +72,7 @@ class TokenData
      * @param TypeListInterface $cacheTypeList
      * @param CredentialsFactory $credentialsFactory
      * @param TokenFactory $tokenFactory
+     * @param \Magento\Framework\Serialize\SerializerInterface $serializer
      */
     public function __construct(
         ScopeConfigInterface $config,
@@ -73,7 +80,8 @@ class TokenData
         ResourceConfig $resourceConfig,
         TypeListInterface $cacheTypeList,
         CredentialsFactory $credentialsFactory,
-        TokenFactory $tokenFactory
+        TokenFactory $tokenFactory,
+        SerializerInterface $serializer
     ) {
         $this->tokenFactory = $tokenFactory;
         $this->credentialsFactory = $credentialsFactory;
@@ -81,6 +89,7 @@ class TokenData
         $this->configFactory = $configFactory;
         $this->resourceConfig = $resourceConfig;
         $this->cacheTypeList = $cacheTypeList;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -104,9 +113,8 @@ class TokenData
         if ($this->isJson($this->currentAccessTokenValue)) {
             $result = \Zend_Json::decode($this->currentAccessTokenValue, \Zend_Json::TYPE_ARRAY);
         } elseif ($this->currentAccessTokenValue) {
-            $result = \unserialize(
-                $this->currentAccessTokenValue,
-                ['allowed_classes' => [\OAuth\OAuth2\Token\StdOAuth2Token::class]]
+            $result = $this->serializer->unserialize(
+                $this->currentAccessTokenValue
             );
         } else {
             $result = null;
@@ -188,7 +196,7 @@ class TokenData
     public function setAccessToken($token)
     {
         $this->clearAccessToken();
-        $serializedToken = \serialize($token);
+        $serializedToken = $this->serializer->serialize($token);
         $tokenModel = $this->tokenFactory->create();
         $tokenModel->saveRecord(
             $serializedToken,
