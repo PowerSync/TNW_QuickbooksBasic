@@ -376,7 +376,9 @@ workflows:
               only: master
 
       - marketplace-submit:
-          context: powersync
+          context:
+            - powersync
+            - quickbooks
           requires:
             - tag-release
           filters:
