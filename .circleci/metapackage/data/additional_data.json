@@ -1,0 +1,109 @@
+{
+  "type": "extension",
+  "sku": "tnw/quickbooks",
+  "url_key": "tnw-quickbooks",
+  "platform": "M2",
+  "name": "QuickBooks Integration Starter Pack",
+  "license_type": "custom",
+  "custom_license_name": "Custom License",
+  "custom_license_url": "https:\/\/powersync.biz\/m2-license",
+  "external_services": {
+    "is_saas": true,
+    "items": [
+      {
+        "name": "QuickBooks Online",
+        "url": "https://quickbooks.intuit.com/",
+        "owner": "3rd_party",
+        "pay_to": "3rd_party"
+      }
+    ]
+  },
+  "pricing_model": {
+    "pricing_type": "one-time",
+    "payment_period": 1
+  },
+  "prices": [
+    {
+      "currency_code": "USD",
+      "edition": "CE",
+      "price": 0,
+      "installation_price": 150
+    },
+    {
+      "currency_code": "USD",
+      "edition": "EE",
+      "price": 0
+    },
+    {
+      "currency_code": "USD",
+      "edition": "ECE",
+      "price": 0
+    }
+  ],
+  "support_tiers": [],
+  "version_compatibility": [
+    {
+      "edition": "CE",
+      "versions": [
+        "2.3",
+        "2.4"
+      ]
+    },
+    {
+      "edition": "EE",
+      "versions": [
+        "2.3",
+        "2.4"
+      ]
+    },
+    {
+      "edition": "ECE",
+      "versions": [
+        "2.3",
+        "2.4"
+      ]
+    }
+  ],
+  "documentation_artifacts": {
+    "user": {
+      "file_upload_id": "4035304"
+    },
+    "installation": [],
+    "reference": {
+      "file_upload_id": "5035304"
+    }
+  },
+  "media_artifacts": {
+    "icon_image": {
+      "file_upload_id": "1117427"
+    },
+    "gallery_images": [
+      {
+        "file_upload_id": "1117420"
+      },
+      {
+        "file_upload_id": "1117421"
+      },
+      {
+        "file_upload_id": "1117422"
+      },
+      {
+        "file_upload_id": "1117423"
+      },
+      {
+        "file_upload_id": "1117424"
+      },
+      {
+        "file_upload_id": "1117425"
+      },
+      {
+        "file_upload_id": "1117426"
+      }
+    ],
+    "video_urls": []
+  },
+  "short_description": "",
+  "long_description": "<p><a href=\"https:\/\/quickbooks.intuit.com\/\"><strong>QuickBooks Online<\/strong><\/a> is a cloud accounting software solution for small and medium businesses. It allows you to use your computer, iPad or mobile phone to invoice your customers, track and report your revenue and expenses, manage and pay bills, and handle payroll.<\/p>\n<p>By installing our connector, you can eliminate unnecessary data entry when managing your books. Our solution allows you to automatically synchronize Magento customer records with QuickBooks Online. The connector will capture business-critical data without having to rely on a&nbsp;human being to&nbsp;manually re-create a customer in QuickBooks as new customers register and place orders in your Magento store or update records as information changes.<\/p>\n<p>&nbsp;<\/p>\n<h3><strong>Account &amp; Pricing<\/strong><\/h3>\n<p><strong>You must have an active <a href=\"http:\/\/quickbooks.intuit.com\/online\/\">QuickBooks Online<\/a>&nbsp;account to use this integration. Additional fees apply! FOr more information on pricing, visit the QuickBooks <a href=\"https:\/\/quickbooks.intuit.com\/pricing\/\">pricing page<\/a>.<br \/><\/strong><\/p>\n<p>&nbsp;<\/p>\n<h3>Benefits &amp; Key Features<\/h3>\n<ul>\n<li>A simple setup which takes minutes<\/li>\n<li>Automated customer &amp; address synchronization<\/li>\n<li>Includes data normalization (duplicate prevention mechanism)<\/li>\n<li>Supports real-time synchronization and on-demand synchronization&nbsp;<\/li>\n<li>Extension tests are included to guarantee quality<\/li>\n<li>OpenSource code to allow customizations to fit any custom business process&nbsp;<\/li>\n<\/ul>\n<p>&nbsp;<\/p>\n<h3>Looking for More Features? Try Our Paid Version<\/h3>\n<p>Our&nbsp;<a href=\"https:\/\/marketplace.magento.com\/tnw-quickbooks-full.html\" target=\"_blank\">Quickbooks Online Paid Version<\/a> Includes the Following Features:&nbsp;<\/p>\n<ul>\n<li>Automated product catalog&nbsp;synchronization (including product images)<\/li>\n<li>Smart integration&nbsp;to help you with data integrity even if your catalog inventory changes over time<\/li>\n<li>Bulk synchronization (yes, ALL transactions, even transactions from the past)<\/li>\n<li>Flexible integration of Magento orders with Quickbooks Invoices, Payments and Sales Receipts<\/li>\n<li>Automated Tax Rate synchronization<\/li>\n<li>Payment method synchronization support<\/li>\n<li>Discounts, tax and shipping fees<\/li>\n<\/ul>",
+  "release_notes": "Please see https://visit.powersync.biz/3ADcKVK",
+  "stability": "stable"
+}
