@@ -1,0 +1,12 @@
+{
+    "name": "tnw/quickbooks",
+    "description": "QuickBooks Integration Starter Pack",
+    "version": "$VERSION",
+    "type": "metapackage",
+    "require": {
+        "tnw/quickbooksbasic": "$VERSION"
+    },
+    "license": [
+        "gpl-3.0"
+    ]
+}
