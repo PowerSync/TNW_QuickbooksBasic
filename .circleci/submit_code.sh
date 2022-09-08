@@ -43,7 +43,6 @@ EQP_SHARED_MODULES=$TMP # Restore EQP_SHARED_MODULES variable
 RESULT=$?
 rm -rf data
 rm $META_ARCH_NAME
-exit $RESULT
 
 # Create advanced meta package update payload
 if [[ -z "${EQP_ADVANCED_META_SKU}" ]]; then
