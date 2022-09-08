@@ -1,7 +1,7 @@
 {
     "name": "$EQP_ADVANCED_META_SKU",
     "description": "QuickBooks Integration",
-    "version": "$VERSION",
+    "version": "$NEXT_VERSION",
     "type": "metapackage",
     "require": {
         "$EQP_BASIC_SKU": "$BASIC_VERSION",
