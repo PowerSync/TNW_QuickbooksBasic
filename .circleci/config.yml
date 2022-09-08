@@ -53,15 +53,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Reinstall Composer
-          command: |
-            cd ~
-            curl -sS https://getcomposer.org/installer -o composer-setup.php
-            sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-            cd /var/www/html/magento/
-            composer --no-plugins config allow-plugins true
-            sudo composer self-update --1
-      - run:
           name: Wait for DB
           command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
       - run:
@@ -219,15 +210,6 @@ jobs:
           MYSQL_ROOT_PASSWORD: docker
 
     steps:
-      - run:
-          name: Reinstall Composer
-          command: |
-            cd ~
-            curl -sS https://getcomposer.org/installer -o composer-setup.php
-            sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-            cd /var/www/html/magento/
-            composer --no-plugins config allow-plugins true
-            sudo composer self-update --1
       - run:
           name: Wait for DB
           command: dockerize -wait tcp://127.0.0.1:3306 -timeout 120s
