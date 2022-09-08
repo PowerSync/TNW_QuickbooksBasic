@@ -1,4 +1,4 @@
-#set -x
+set -x
 
 VERSION=$(grep -o '^ *"version": *"[0-9\.]*"' ../composer.json | awk '{print $2}' | sed -e 's/"\(.*\)"/\1/g')
 WD=$(pwd)
@@ -17,7 +17,7 @@ cp -r sharedpackage/data eqp
 cd eqp
 bin/main $SHARED_ARCH_NAME $VERSION 0
 RESULT=$?
-rm data
+rm -rf data
 rm $SHARED_ARCH_NAME
 if [ $RESULT -ne 0 ]; then
     exit $RESULT
@@ -41,6 +41,7 @@ EQP_SHARED_MODULES=$EQP_SHARED_SKU # Rewrite EQP_SHARED_MODULES variable as orig
 bin/main $META_ARCH_NAME $VERSION 1
 EQP_SHARED_MODULES=$TMP # Restore EQP_SHARED_MODULES variable
 RESULT=$?
+rm -rf data
 rm $META_ARCH_NAME
 exit $RESULT
 
@@ -98,5 +99,6 @@ cp -r advancedmetapackage/data eqp
 cd eqp
 bin/main $ADVANCED_META_ARCH_NAME "$VERSION" 1 "$EQP_ADVANCED_META_SKU"
 RESULT=$?
+rm -rf data
 rm $ADVANCED_META_ARCH_NAME
 exit $RESULT
