@@ -73,13 +73,13 @@ cp $SAMPLE $TARGET
 cd eqp
 bin/get_next_version "${EQP_ADVANCED_META_SKU}"
 bin/get_package_versions "${EQP_SHARED_MODULES}"
-ENCODED_SKU=$(php -r "echo urlencode('"EQP_ADVANCED_META_SKU"');")
+ENCODED_SKU=$(php -r "echo urlencode('"${EQP_ADVANCED_META_SKU}"');")
 NEXT_VERSION=$(cat "tmp/next/${ENCODED_SKU}")
-BASIC_ENCODED_SKU=$(php -r "echo urlencode('"EQP_BASIC_SKU"');")
+BASIC_ENCODED_SKU=$(php -r "echo urlencode('"$EQP_BASIC_SKU}"');")
 BASIC_VERSION=$(cat "tmp/shared/${BASIC_ENCODED_SKU}")
-ENTERPRISE_ENCODED_SKU=$(php -r "echo urlencode('"EQP_ENTERPRISE_SKU"');")
+ENTERPRISE_ENCODED_SKU=$(php -r "echo urlencode('"${EQP_ENTERPRISE_SKU}"');")
 ENTERPRISE_VERSION=$(cat "tmp/shared/${ENTERPRISE_ENCODED_SKU}")
-BUSINESS_ENCODED_SKU=$(php -r "echo urlencode('"EQP_BUSINESS_SKU"');")
+BUSINESS_ENCODED_SKU=$(php -r "echo urlencode('"${EQP_BUSINESS_SKU}"');")
 BUSINESS_VERSION=$(cat "tmp/shared/${BUSINESS_ENCODED_SKU}")
 cd "${WD}"
 sed -i "s/\$EQP_ADVANCED_META_SKU/$EQP_ADVANCED_META_SKU/" "$TARGET"
