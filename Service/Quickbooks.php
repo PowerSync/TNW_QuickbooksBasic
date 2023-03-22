@@ -21,6 +21,7 @@ use Magento\Framework\App\Request\DataPersistorInterface;
 use OAuth\Common\Http\Uri\UriFactory;
 use OAuth\Common\Http\Client\CurlClientFactory;
 use OAuth\OAuth2\Token\StdOAuth2TokenFactory;
+use TNW\QuickbooksBasic\Model\Exception\LoggingException;
 
 /**
  * Class Quickbooks
@@ -168,7 +169,7 @@ class Quickbooks
             'Authorization' => 'Bearer ' . $token->getAccessToken(),
             'Accept' => 'application/json'
         ];
-        $requestCacheKey = $apiUrl . $requestUri;
+        $requestCacheKey = $apiUrl . $requestUri . $token->getAccessToken();
         $requestCache = $this->getRequestCache($requestCacheKey);
         if ($requestCache) {
             return $requestCache;
@@ -265,7 +266,7 @@ class Quickbooks
             'Content-Type' => 'application/text'
         ];
 
-        $requestCacheKey = $apiUrl . $requestUri . $queryString;
+        $requestCacheKey = $apiUrl . $requestUri . $queryString . $token->getAccessToken();
         $requestCache = $this->getRequestCache($requestCacheKey);
         if ($requestCache) {
             return $requestCache;
@@ -355,7 +356,7 @@ class Quickbooks
             'Content-Type' => 'application/json'
         ];
 
-        $requestCacheKey = $url->getAbsoluteUri() . $encodedData;
+        $requestCacheKey = $url->getAbsoluteUri() . $encodedData . $token->getAccessToken();
         $requestCache = $this->getRequestCache($requestCacheKey);
         if ($requestCache) {
             return $requestCache;
@@ -471,17 +472,22 @@ class Quickbooks
             $responseBody = $e->getMessage();
         }
 
-        $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
-        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
-        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
-        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+        try {
+            $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
+            $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
+            $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+            $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+        } catch (\Exception $e) {
+            $this->messageManager->addWarning($e->getMessage());
+            throw new LoggingException('Grant request loggging failure.');
+        } finally {
+            $this->tokenData->setAuthTokenState('');
+            $this->setAccessToken($this->parseAccessTokenResponse($responseBody));
 
-        $this->tokenData->setAuthTokenState('');
-        $this->setAccessToken($this->parseAccessTokenResponse($responseBody));
+            $companyId = $request->getParam('realmId');
 
-        $companyId = $request->getParam('realmId');
-
-        $this->setCompanyId($companyId);
+            $this->setCompanyId($companyId);
+        }
 
         return $this;
     }
@@ -775,7 +781,6 @@ class Quickbooks
 
         $token = $this->auth2TokenFactory->create();
         $token->setAccessToken($data['access_token']);
-        $token->setLifeTime($data['expires_in']);
 
         if (isset($data['refresh_token'])) {
             $token->setRefreshToken($data['refresh_token']);
