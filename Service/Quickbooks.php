@@ -781,6 +781,7 @@ class Quickbooks
 
         $token = $this->auth2TokenFactory->create();
         $token->setAccessToken($data['access_token']);
+        $token->setLifeTime($data['expires_in']);
 
         if (isset($data['refresh_token'])) {
             $token->setRefreshToken($data['refresh_token']);
