@@ -659,7 +659,7 @@ class Quickbooks
             return ['error' => 'true', 'message' => $e->getMessage()];
         }
         $this->authLogger->debug('Disconnect process.');
-        $this->authLogger->authLogger(
+        $this->authLogger->debug(
             'QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL
         );
         $this->authLogger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
