@@ -88,6 +88,11 @@ class Quickbooks
     protected $dataPersistor;
 
     /**
+     * @var LoggerInterface
+     */
+    protected $authLogger;
+
+    /**
      * Quickbooks constructor.
      * @param ScopeConfigInterface $config
      * @param LoggerInterface $logger
@@ -101,6 +106,7 @@ class Quickbooks
      * @param CurlClientFactory $httpClientFactory
      * @param StdOAuth2TokenFactory $auth2TokenFactory
      * @param DataPersistorInterface $dataPersistor
+     * @param LoggerInterface $authLogger
      */
     public function __construct(
         ScopeConfigInterface $config,
@@ -114,8 +120,10 @@ class Quickbooks
         State $state,
         CurlClientFactory $httpClientFactory,
         StdOAuth2TokenFactory $auth2TokenFactory,
-        DataPersistorInterface $dataPersistor
+        DataPersistorInterface $dataPersistor,
+        LoggerInterface $authLogger
     ) {
+        $this->authLogger = $authLogger;
         $this->dataPersistor = $dataPersistor;
         $this->auth2TokenFactory = $auth2TokenFactory;
         $this->httpClientFactory = $httpClientFactory;
@@ -215,10 +223,18 @@ class Quickbooks
     public function isAccessTokenNeedRenewal()
     {
         $token = $this->getAccessToken();
-        return ($token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_NEVER_EXPIRES
+        $result = ($token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_NEVER_EXPIRES
             && $token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_UNKNOWN
             && time() > $token->getEndOfLife()
         );
+        if ($result) {
+            try {
+                $this->authLogger->debug('Access token expired.');
+            } catch (\Exception $e) {
+                return $result;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -473,10 +489,10 @@ class Quickbooks
         }
 
         try {
-            $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
-            $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
-            $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
-            $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+            $this->authLogger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
+            $this->authLogger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
+            $this->authLogger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+            $this->authLogger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
         } catch (\Exception $e) {
             $this->messageManager->addWarning($e->getMessage());
             throw new LoggingException('Grant request loggging failure.');
@@ -508,6 +524,7 @@ class Quickbooks
      */
     public function clearAccessToken()
     {
+        $this->authLogger->debug('Clear access token');
         return $this->tokenData->clearAccessToken();
     }
 
@@ -535,8 +552,12 @@ class Quickbooks
     public function reconnect()
     {
         try {
+            $this->authLogger->debug('Refresh token start.');
             $result = $this->refreshToken();
+            $this->authLogger->debug('Refresh token end.');
         } catch (\Exception $e) {
+            $this->authLogger->debug('Issue with refresh token: ' . $e->getMessage());
+            $this->authLogger->debug('Refresh token end.');
             return ['error' => 'true', 'message' => $e->getMessage()];
         }
         return $result;
@@ -580,10 +601,10 @@ class Quickbooks
                 $responseBody = $e->getMessage();
             }
 
-            $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
-            $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
-            $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
-            $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+            $this->authLogger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
+            $this->authLogger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
+            $this->authLogger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+            $this->authLogger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
 
             try {
                 $token = $this->parseAccessTokenResponse($responseBody);
@@ -637,14 +658,14 @@ class Quickbooks
         } catch (\Exception $e) {
             return ['error' => 'true', 'message' => $e->getMessage()];
         }
-
-        $this->logger->debug(
+        $this->authLogger->debug('Disconnect process.');
+        $this->authLogger->authLogger(
             'QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL
         );
-        $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
-        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . $body);
-        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
-        $this->logger->debug(
+        $this->authLogger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
+        $this->authLogger->debug('QUICKBOOKS REQUEST BODY:' . $body);
+        $this->authLogger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+        $this->authLogger->debug(
             'QUICKBOOKS RESPONSE BODY:' . $response
         );
 
