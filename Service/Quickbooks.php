@@ -916,7 +916,7 @@ class Quickbooks
      * @param $key
      * @param $data
      */
-    private function setRequestCache($key, $data)
+    protected function setRequestCache($key, $data)
     {
         $parsedResult = $this->checkResponse($data);
         if (array_key_exists('Fault', $parsedResult)
@@ -937,7 +937,7 @@ class Quickbooks
      * @param $key
      * @return bool|mixed
      */
-    private function getRequestCache($key)
+    protected function getRequestCache($key)
     {
         $key = hash('adler32', $key);
         $alreadyProcessedRequest = $this->dataPersistor->get('quickbooks_request');
