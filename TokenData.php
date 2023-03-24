@@ -104,11 +104,12 @@ class TokenData
         if ($this->isJson($this->currentAccessTokenValue)) {
             $result = \Zend_Json::decode($this->currentAccessTokenValue, \Zend_Json::TYPE_ARRAY);
         } elseif ($this->currentAccessTokenValue) {
-            // phpcs:ignore Magento2.Security.InsecureFunction
+            // @codingStandardsIgnoreStart
             $result = \unserialize(
                 $this->currentAccessTokenValue,
                 ['allowed_classes' => [\OAuth\OAuth2\Token\StdOAuth2Token::class]]
             );
+            // @codingStandardsIgnoreEnd
         } else {
             $result = null;
         }
@@ -189,8 +190,9 @@ class TokenData
     public function setAccessToken($token)
     {
         $this->clearAccessToken();
-        // phpcs:ignore Magento2.Security.InsecureFunction
+        // @codingStandardsIgnoreStart
         $serializedToken = \serialize($token);
+        // @codingStandardsIgnoreEnd
         $tokenModel = $this->tokenFactory->create();
         $tokenModel->saveRecord(
             $serializedToken,
