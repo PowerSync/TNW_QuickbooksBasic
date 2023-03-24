@@ -121,6 +121,7 @@ abstract class AbstractQuickbooksSource extends AbstractSource
             if ($this->isJson($sourceList)) {
                 $sourceList = \Zend_Json::decode($sourceList, \Zend_Json::TYPE_ARRAY);
             } else {
+                // phpcs:ignore Magento2.Security.InsecureFunction
                 $sourceList = \unserialize($sourceList);
             }
         } else {
