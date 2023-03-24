@@ -28,6 +28,7 @@ class Token extends AbstractDb
      */
     public function saveRecord($tokenData, $expirationDate)
     {
+        // phpcs:ignore Magento2.Security.InsecureFunction
         if (($this->isJson($tokenData)
             || \unserialize($tokenData) instanceof \OAuth\OAuth2\Token\StdOAuth2Token)
             && $this->isDate($expirationDate)
