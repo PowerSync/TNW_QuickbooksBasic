@@ -17,6 +17,9 @@
     <preference for="OAuth\Common\Http\Client\CurlClient"
                 type="TNW\QuickbooksBasic\Client\CurlClient"
     />
+    <preference for="Magento\Framework\Serialize\Serializer\Serialize"
+                type="TNW\QuickbooksBasic\Model\Serialize"
+    />
     <type name="TNW\QuickbooksBasic\Model\Quickbooks\SyncManager">
         <arguments>
             <argument name="entities" xsi:type="array">
