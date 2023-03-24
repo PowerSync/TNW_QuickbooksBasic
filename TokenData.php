@@ -13,6 +13,7 @@ use TNW\QuickbooksBasic\Model\Quickbooks;
 use Magento\Config\Model\ResourceModel\Config as ResourceConfig;
 use TNW\QuickbooksBasic\Model\ResourceModel\TokenFactory;
 use OAuth\Common\Consumer\CredentialsFactory;
+use Magento\Framework\Serialize\Serializer\Serialize;
 
 /**
  * Class TokenData
@@ -59,23 +60,18 @@ class TokenData
      */
     private $tokenFactory;
 
-    /**
-     * TokenData constructor.
-     * @param ScopeConfigInterface $config
-     * @param Factory $configFactory
-     * @param ResourceConfig $resourceConfig
-     * @param TypeListInterface $cacheTypeList
-     * @param CredentialsFactory $credentialsFactory
-     * @param TokenFactory $tokenFactory
-     */
+    private $serializer;
+
     public function __construct(
         ScopeConfigInterface $config,
         Factory $configFactory,
         ResourceConfig $resourceConfig,
         TypeListInterface $cacheTypeList,
         CredentialsFactory $credentialsFactory,
-        TokenFactory $tokenFactory
+        TokenFactory $tokenFactory,
+        Serialize $serializer
     ) {
+        $this->serializer = $serializer;
         $this->tokenFactory = $tokenFactory;
         $this->credentialsFactory = $credentialsFactory;
         $this->config = $config;
@@ -106,9 +102,9 @@ class TokenData
             $result = \Zend_Json::decode($this->currentAccessTokenValue, \Zend_Json::TYPE_ARRAY);
         } elseif ($this->currentAccessTokenValue) {
             // @codingStandardsIgnoreStart
-            $result = \unserialize(
+            $result = $this->serializer->unserializeObject(
                 $this->currentAccessTokenValue,
-                ['allowed_classes' => [\OAuth\OAuth2\Token\StdOAuth2Token::class]]
+                [\OAuth\OAuth2\Token\StdOAuth2Token::class]
             );
             // @codingStandardsIgnoreEnd
         } else {
@@ -192,7 +188,7 @@ class TokenData
     {
         $this->clearAccessToken();
         // @codingStandardsIgnoreStart
-        $serializedToken = \serialize($token);
+        $serializedToken = $this->serializer->serialize($token);
         // @codingStandardsIgnoreEnd
         $tokenModel = $this->tokenFactory->create();
         $tokenModel->saveRecord(
