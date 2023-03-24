@@ -9,6 +9,7 @@ use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 /**
  * Class Token - used for data manipulations with token data for QBO
+ * @codingStandardsIgnoreFile
  */
 class Token extends AbstractDb
 {

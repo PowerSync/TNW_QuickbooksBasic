@@ -18,6 +18,7 @@ use TNW\QuickbooksBasic\Model\Quickbooks;
 /**
  * Class SourceAbstract
  * @codeCoverageIgnore
+ * @codingStandardsIgnoreFile
  */
 abstract class AbstractQuickbooksSource extends AbstractSource
 {

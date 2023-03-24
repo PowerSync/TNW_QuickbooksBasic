@@ -16,6 +16,7 @@ use OAuth\Common\Consumer\CredentialsFactory;
 
 /**
  * Class TokenData
+ * @codingStandardsIgnoreFile
  */
 class TokenData
 {
