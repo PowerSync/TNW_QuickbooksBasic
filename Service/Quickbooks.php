@@ -21,6 +21,7 @@ use Magento\Framework\App\Request\DataPersistorInterface;
 use OAuth\Common\Http\Uri\UriFactory;
 use OAuth\Common\Http\Client\CurlClientFactory;
 use OAuth\OAuth2\Token\StdOAuth2TokenFactory;
+use TNW\QuickbooksBasic\Model\Exception\LoggingException;
 
 /**
  * Class Quickbooks
@@ -87,6 +88,11 @@ class Quickbooks
     protected $dataPersistor;
 
     /**
+     * @var LoggerInterface
+     */
+    protected $authLogger;
+
+    /**
      * Quickbooks constructor.
      * @param ScopeConfigInterface $config
      * @param LoggerInterface $logger
@@ -100,6 +106,7 @@ class Quickbooks
      * @param CurlClientFactory $httpClientFactory
      * @param StdOAuth2TokenFactory $auth2TokenFactory
      * @param DataPersistorInterface $dataPersistor
+     * @param LoggerInterface $authLogger
      */
     public function __construct(
         ScopeConfigInterface $config,
@@ -113,8 +120,10 @@ class Quickbooks
         State $state,
         CurlClientFactory $httpClientFactory,
         StdOAuth2TokenFactory $auth2TokenFactory,
-        DataPersistorInterface $dataPersistor
+        DataPersistorInterface $dataPersistor,
+        LoggerInterface $authLogger
     ) {
+        $this->authLogger = $authLogger;
         $this->dataPersistor = $dataPersistor;
         $this->auth2TokenFactory = $auth2TokenFactory;
         $this->httpClientFactory = $httpClientFactory;
@@ -168,7 +177,7 @@ class Quickbooks
             'Authorization' => 'Bearer ' . $token->getAccessToken(),
             'Accept' => 'application/json'
         ];
-        $requestCacheKey = $apiUrl . $requestUri;
+        $requestCacheKey = $apiUrl . $requestUri . $token->getAccessToken();
         $requestCache = $this->getRequestCache($requestCacheKey);
         if ($requestCache) {
             return $requestCache;
@@ -214,10 +223,18 @@ class Quickbooks
     public function isAccessTokenNeedRenewal()
     {
         $token = $this->getAccessToken();
-        return ($token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_NEVER_EXPIRES
+        $result = ($token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_NEVER_EXPIRES
             && $token->getEndOfLife() !== \OAuth\Common\Token\TokenInterface::EOL_UNKNOWN
             && time() > $token->getEndOfLife()
         );
+        if ($result) {
+            try {
+                $this->authLogger->debug('Access token expired.');
+            } catch (\Exception $e) {
+                return $result;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -265,7 +282,7 @@ class Quickbooks
             'Content-Type' => 'application/text'
         ];
 
-        $requestCacheKey = $apiUrl . $requestUri . $queryString;
+        $requestCacheKey = $apiUrl . $requestUri . $queryString . $token->getAccessToken();
         $requestCache = $this->getRequestCache($requestCacheKey);
         if ($requestCache) {
             return $requestCache;
@@ -355,7 +372,7 @@ class Quickbooks
             'Content-Type' => 'application/json'
         ];
 
-        $requestCacheKey = $url->getAbsoluteUri() . $encodedData;
+        $requestCacheKey = $url->getAbsoluteUri() . $encodedData . $token->getAccessToken();
         $requestCache = $this->getRequestCache($requestCacheKey);
         if ($requestCache) {
             return $requestCache;
@@ -471,17 +488,22 @@ class Quickbooks
             $responseBody = $e->getMessage();
         }
 
-        $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
-        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
-        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
-        $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+        try {
+            $this->authLogger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
+            $this->authLogger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
+            $this->authLogger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+            $this->authLogger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+        } catch (\Exception $e) {
+            $this->messageManager->addWarning($e->getMessage());
+            throw new LoggingException('Grant request loggging failure.');
+        } finally {
+            $this->tokenData->setAuthTokenState('');
+            $this->setAccessToken($this->parseAccessTokenResponse($responseBody));
 
-        $this->tokenData->setAuthTokenState('');
-        $this->setAccessToken($this->parseAccessTokenResponse($responseBody));
+            $companyId = $request->getParam('realmId');
 
-        $companyId = $request->getParam('realmId');
-
-        $this->setCompanyId($companyId);
+            $this->setCompanyId($companyId);
+        }
 
         return $this;
     }
@@ -502,6 +524,7 @@ class Quickbooks
      */
     public function clearAccessToken()
     {
+        $this->authLogger->debug('Clear access token');
         return $this->tokenData->clearAccessToken();
     }
 
@@ -529,8 +552,12 @@ class Quickbooks
     public function reconnect()
     {
         try {
+            $this->authLogger->debug('Refresh token start.');
             $result = $this->refreshToken();
+            $this->authLogger->debug('Refresh token end.');
         } catch (\Exception $e) {
+            $this->authLogger->debug('Issue with refresh token: ' . $e->getMessage());
+            $this->authLogger->debug('Refresh token end.');
             return ['error' => 'true', 'message' => $e->getMessage()];
         }
         return $result;
@@ -574,10 +601,10 @@ class Quickbooks
                 $responseBody = $e->getMessage();
             }
 
-            $this->logger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
-            $this->logger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
-            $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
-            $this->logger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
+            $this->authLogger->debug('QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::ACCESS_TOKEN_URL);
+            $this->authLogger->debug('QUICKBOOKS REQUEST BODY:' . json_encode($bodyParams));
+            $this->authLogger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+            $this->authLogger->debug('QUICKBOOKS RESPONSE BODY:' . $responseBody);
 
             try {
                 $token = $this->parseAccessTokenResponse($responseBody);
@@ -631,14 +658,14 @@ class Quickbooks
         } catch (\Exception $e) {
             return ['error' => 'true', 'message' => $e->getMessage()];
         }
-
-        $this->logger->debug(
+        $this->authLogger->debug('Disconnect process.');
+        $this->authLogger->debug(
             'QUICKBOOKS REQUEST URL:' . \TNW\QuickbooksBasic\Model\Config::DISCONNECT_TOKEN_URL
         );
-        $this->logger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
-        $this->logger->debug('QUICKBOOKS REQUEST BODY:' . $body);
-        $this->logger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
-        $this->logger->debug(
+        $this->authLogger->debug('QUICKBOOKS REQUEST HEADERS:' . json_encode($headers));
+        $this->authLogger->debug('QUICKBOOKS REQUEST BODY:' . $body);
+        $this->authLogger->debug('QUICKBOOKS RESPONSE STATUS:' . $status);
+        $this->authLogger->debug(
             'QUICKBOOKS RESPONSE BODY:' . $response
         );
 
@@ -916,7 +943,7 @@ class Quickbooks
      * @param $key
      * @param $data
      */
-    private function setRequestCache($key, $data)
+    protected function setRequestCache($key, $data)
     {
         $parsedResult = $this->checkResponse($data);
         if (array_key_exists('Fault', $parsedResult)
@@ -937,7 +964,7 @@ class Quickbooks
      * @param $key
      * @return bool|mixed
      */
-    private function getRequestCache($key)
+    protected function getRequestCache($key)
     {
         $key = hash('adler32', $key);
         $alreadyProcessedRequest = $this->dataPersistor->get('quickbooks_request');

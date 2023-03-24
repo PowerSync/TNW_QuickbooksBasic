@@ -2,7 +2,7 @@
   "name": "tnw/quickbooksbasic",
   "description": "Magento 2 and Quickbooks Basic Connector",
   "type": "magento2-module",
-  "version": "2.1.53",
+  "version": "2.1.54",
   "license": [
     "gpl-3.0"
   ],

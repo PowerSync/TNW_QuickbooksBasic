@@ -7,6 +7,7 @@
 namespace TNW\QuickbooksBasic\Controller\Callback;
 
 use TNW\QuickbooksBasic\Model\Quickbooks as ModelQuickbooks;
+use TNW\QuickbooksBasic\Model\Exception\LoggingException;
 
 /**
  * Class Index
@@ -51,6 +52,8 @@ class Index extends \Magento\Framework\App\Action\Action
         } catch (\TNW\QuickbooksBasic\Service\Exception\InvalidStateException $e) {
             $this->_redirect($this->backendUrl->getBaseUrl());
             return;
+        } catch (LoggingException $e) {
+            $this->messageManager->addWarning($e->getMessage());
         } catch (\Exception $e) {
             $this->messageManager->addWarning($e->getMessage());
         }
