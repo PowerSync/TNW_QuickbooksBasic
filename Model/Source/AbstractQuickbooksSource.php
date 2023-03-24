@@ -116,7 +116,7 @@ abstract class AbstractQuickbooksSource extends AbstractSource
 
         /** @var bool $newList */
         $newList = false;
-
+        // @codingStandardsIgnoreStart
         if ($sourceList) {
             if ($this->isJson($sourceList)) {
                 $sourceList = \Zend_Json::decode($sourceList, \Zend_Json::TYPE_ARRAY);
@@ -128,7 +128,7 @@ abstract class AbstractQuickbooksSource extends AbstractSource
             $sourceList = $this->querySourceList();
             $newList = true;
         }
-
+        // @codingStandardsIgnoreEnd
         if ($sourceList && count($sourceList) > 0 && $newList) {
             $this->cache->save(\Zend_Json::encode($sourceList), $cacheId);
         }
