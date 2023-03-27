@@ -296,7 +296,7 @@ jobs:
       - run:
           name: Run Magento Coding Standard
           command: |
-            /var/www/html/magento/vendor/bin/phpcs --standard=Magento2 --extensions=php,phtml --severity=10 --ignore-annotations $CIRCLE_WORKING_DIRECTORY
+            /var/www/html/magento/vendor/bin/phpcs --standard=Magento2 --extensions=php,phtml --severity=10 $CIRCLE_WORKING_DIRECTORY
 
   check-composer-installation:
     <<: *base-image243
