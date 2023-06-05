@@ -464,6 +464,7 @@ class Quickbooks
      */
     public function grant(RequestInterface $request)
     {
+        $this->authLogger->debug('Grant process start.');
         if ($request->getParam('state') != $this->tokenData->getAuthTokenState()) {
             throw new Exception\InvalidStateException(__('Invalid State.'));
         }
@@ -504,7 +505,7 @@ class Quickbooks
 
             $this->setCompanyId($companyId);
         }
-
+        $this->authLogger->debug('Grant process end.');
         return $this;
     }
 
